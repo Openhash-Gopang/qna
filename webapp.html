@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Gopang QnA</title>
+<link rel="icon" href="data:,">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;height:100dvh;overflow:hidden;
+  font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:15px;
+  background:#f8fafc;color:#1c1c1e;-webkit-font-smoothing:antialiased}
+:root{
+  --green:#3ecf8e;--green-dk:#2a9d6f;--green-lt:#d1fae5;
+  --bg:#f8fafc;--surface:#fff;--sep:#e2e8f0;--txt2:#64748b;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px)
+}
+#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+
+/* 상단 바 */
+.topbar{display:flex;align-items:center;
+  padding:calc(var(--safe-top) + 10px) 16px 10px;
+  background:var(--green);gap:10px;flex-shrink:0;min-height:52px}
+.back-btn{background:none;border:none;color:rgba(255,255,255,.85);
+  font-size:16px;cursor:pointer;padding:4px 0;
+  display:flex;align-items:center;gap:4px;flex-shrink:0;white-space:nowrap}
+.back-btn svg{width:10px;height:16px;stroke:rgba(255,255,255,.85);stroke-width:2.5;
+  fill:none;stroke-linecap:round;stroke-linejoin:round}
+.topbar-center{flex:1;text-align:center;overflow:hidden}
+.topbar-title{font-size:16px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-sub{font-size:11px;color:rgba(255,255,255,.75);margin-top:1px}
+.auth-badge{background:rgba(255,255,255,.2);color:#fff;border-radius:10px;
+  padding:3px 8px;font-size:11px;font-weight:700;flex-shrink:0}
+
+/* 채팅 바디 */
+#chat-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:12px 16px 8px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+
+/* AI 버블 */
+.bubble-ai{display:flex;align-items:flex-end;gap:8px;max-width:88%;align-self:flex-start}
+.ai-avatar{width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#3ecf8e,#2a9d6f);
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.bubble-ai-inner{display:flex;flex-direction:column;gap:2px}
+.bubble-ai-text{background:var(--surface);border-radius:18px 18px 18px 4px;
+  padding:10px 14px;font-size:15px;line-height:1.6;color:#1c1c1e;
+  box-shadow:0 1px 4px rgba(62,207,142,.12);word-break:break-word}
+.bubble-ai-text b{font-weight:600;color:#0f172a}
+.bubble-ai-time{font-size:10px;color:var(--txt2);padding-left:4px}
+
+/* 사용자 버블 */
+.bubble-user{display:flex;flex-direction:column;align-items:flex-end;max-width:88%;align-self:flex-end}
+.bubble-user-text{background:var(--green);border-radius:18px 18px 4px 18px;
+  padding:10px 14px;font-size:15px;line-height:1.6;color:#fff;word-break:break-word}
+.bubble-user-time{font-size:10px;color:var(--txt2);margin-top:2px;text-align:right}
+
+/* 타이핑 */
+.typing{display:flex;align-items:flex-end;gap:8px;align-self:flex-start}
+.typing-dots{background:var(--surface);border-radius:18px;padding:12px 16px;display:flex;gap:5px;
+  box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:#6ee7b7;animation:typingDot 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes typingDot{0%,60%,100%{transform:none;opacity:.5}30%{transform:translateY(-6px);opacity:1}}
+
+/* 카테고리 태그 */
+.cat-tag{display:inline-block;background:var(--green-lt);color:var(--green-dk);
+  border-radius:8px;padding:2px 8px;font-size:11px;font-weight:600;margin-bottom:6px}
+
+/* 빠른 칩 */
+.quick-chips{display:flex;gap:8px;padding:6px 16px 8px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0;background:var(--bg)}
+.quick-chips::-webkit-scrollbar{display:none}
+.chip{background:var(--surface);border:1px solid var(--sep);border-radius:16px;
+  padding:6px 14px;font-size:13px;color:var(--green-dk);white-space:nowrap;cursor:pointer;
+  flex-shrink:0;transition:background .12s}
+.chip:hover,.chip:active{background:var(--green-lt)}
+
+/* 입력 영역 */
+.input-area{background:var(--surface);border-top:0.5px solid var(--sep);
+  padding:8px 12px calc(8px + var(--safe-bot));display:flex;align-items:flex-end;gap:8px;flex-shrink:0}
+.input-wrap{flex:1;background:var(--bg);border:1px solid var(--sep);border-radius:20px;
+  display:flex;align-items:flex-end;padding:6px 12px;transition:border-color .15s}
+.input-wrap:focus-within{border-color:var(--green)}
+#msg-input{flex:1;background:none;border:none;outline:none;font-family:inherit;
+  font-size:15px;color:#1c1c1e;resize:none;max-height:100px;line-height:1.4}
+#msg-input::placeholder{color:#c7c7cc}
+.send-btn{width:36px;height:36px;border-radius:50%;background:var(--green);border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;transition:background .15s}
+.send-btn:disabled{background:#c7c7cc;cursor:not-allowed}
+.send-btn svg{width:16px;height:16px;fill:#fff}
+
+/* 로딩 */
+#auth-loading{position:fixed;inset:0;z-index:9999;background:var(--surface);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.spinner{width:28px;height:28px;border:3px solid #d1fae5;border-top-color:var(--green);
+  border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="auth-loading">
+  <div class="spinner"></div>
+  <div style="font-size:14px;color:var(--txt2)">고팡 인증 확인 중…</div>
+</div>
+
+<div id="app" style="display:none">
+  <!-- 상단 바 -->
+  <div class="topbar">
+    <button class="back-btn" onclick="goBackToGopang()">
+      <svg viewBox="0 0 10 16"><polyline points="9 1 1 8 9 15"/></svg>고팡
+    </button>
+    <div class="topbar-center">
+      <div class="topbar-title">Gopang QnA</div>
+      <div class="topbar-sub" id="topbar-sub">AI 지식 도우미</div>
+    </div>
+    <div class="auth-badge" id="auth-badge">—</div>
+  </div>
+
+  <!-- 채팅 바디 -->
+  <div id="chat-body"></div>
+
+  <!-- 빠른 칩 -->
+  <div class="quick-chips" id="quick-chips">
+    <div class="chip" onclick="sendQuick('고팡이 뭔가요?')">고팡이란?</div>
+    <div class="chip" onclick="sendQuick('제주도 파일럿 계획을 알려주세요')">제주 파일럿</div>
+    <div class="chip" onclick="sendQuick('GDC는 무엇인가요?')">GDC</div>
+    <div class="chip" onclick="sendQuick('K-Law 판결 시뮬레이터 사용법이 궁금해요')">K-Law</div>
+    <div class="chip" onclick="sendQuick('태스크포스 구성은 어떻게 되나요?')">TF 구성</div>
+  </div>
+
+  <!-- 입력 영역 -->
+  <div class="input-area">
+    <div class="input-wrap">
+      <textarea id="msg-input" rows="1" placeholder="고팡에 대해 무엇이든 물어보세요…"
+        oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+    </div>
+    <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+// ── 상태 ──────────────────────────────────────────
+let gopangUser = null;
+let chatHistory = [];
+let isTyping = false;
+let docsLoaded = [];
+
+// ── 인증 ──────────────────────────────────────────
+window.addEventListener('message', e => {
+  if (e.data?.type === 'GOPANG_AUTH') initApp(e.data.user);
+});
+window.addEventListener('load', () => {
+  const p = new URLSearchParams(location.search);
+  const ctx = p.get('ctx');
+  if (ctx) {
+    try { initApp(JSON.parse(atob(ctx))); return; } catch(e){}
+  }
+  // subsystem-auth.js 패턴 (gopang.net 인증)
+  if (window.parent !== window) {
+    window.parent.postMessage({type:'GOPANG_AUTH_REQUEST', svc:'qna'}, '*');
+  }
+  // 2초 후 게스트 폴백
+  setTimeout(() => {
+    if (!gopangUser) initApp({name:'게스트', guid:'guest', plan:'free'});
+  }, 2000);
+});
+
+function initApp(user) {
+  gopangUser = user;
+  document.getElementById('auth-loading').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('auth-badge').textContent = user.name || '게스트';
+  document.getElementById('msg-input').addEventListener('input', () => {
+    document.getElementById('send-btn').disabled = !document.getElementById('msg-input').value.trim();
+  });
+  loadDocIndex().then(() => {
+    addAiMessage(`안녕하세요, **${user.name || '게스트'}**님! 👋\n\nGopang 시스템에 대한 질문에 답해드립니다.\n현재 **${docsLoaded.length}개** 문서가 로드되어 있습니다. 무엇이든 물어보세요!`);
+  });
+}
+
+function goBackToGopang() {
+  if (window.parent !== window) window.parent.postMessage({type:'GWP_BACK'}, '*');
+  else location.href = KQNA_CONFIG.gopangUrl;
+}
+
+// ── 문서 인덱스 로드 ───────────────────────────────
+async function loadDocIndex() {
+  try {
+    const r = await fetch('docs/index.json');
+    const data = await r.json();
+    docsLoaded = data.docs || [];
+  } catch(e) { docsLoaded = []; }
+}
+
+// ── 메시지 전송 ────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text || isTyping) return;
+  input.value = '';
+  input.style.height = '';
+  document.getElementById('send-btn').disabled = true;
+
+  addUserMessage(text);
+  chatHistory.push({role:'user', content: text});
+
+  showTyping();
+  const reply = await callAI(text);
+  hideTyping();
+
+  addAiMessage(reply);
+  chatHistory.push({role:'assistant', content: reply});
+}
+
+function sendQuick(text) {
+  document.getElementById('msg-input').value = text;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = '';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  document.getElementById('send-btn').disabled = !el.value.trim();
+}
+
+// ── AI 호출 ───────────────────────────────────────
+async function callAI(question) {
+  const systemPrompt = buildSystemPrompt();
+  try {
+    const res = await fetch(KQNA_CONFIG.proxyUrl, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        service: KQNA_CONFIG.svc,
+        model:   KQNA_CONFIG.model,
+        max_tokens: KQNA_CONFIG.maxTokens,
+        temperature: KQNA_CONFIG.temperature,
+        system:  systemPrompt,
+        messages: chatHistory.slice(-10),
+        guid: gopangUser?.guid || 'guest',
+      })
+    });
+    const data = await res.json();
+    return data.content?.[0]?.text || data.choices?.[0]?.message?.content || '응답을 가져오지 못했습니다.';
+  } catch(e) {
+    return '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
+function buildSystemPrompt() {
+  const docList = docsLoaded.map(d => `- [${d.cat}] ${d.title}`).join('\n');
+  return `당신은 Gopang(고팡) 시스템 전문 AI 도우미입니다. AI City Inc. / 팀 주피터가 운영하는 14개 서브시스템 기반 AI 시민 서비스 플랫폼에 대한 질문에 정확하고 친절하게 답합니다.
+
+## 현재 로드된 지식 문서 (${docsLoaded.length}건)
+${docList}
+
+## 답변 원칙
+1. 문서에 기반한 사실만 답변하고, 추측은 명확히 구분
+2. 한국어로 답변, 전문 용어는 풀어서 설명
+3. 서브시스템(K-Law, K-119, K-Health 등) 관련 질문은 해당 문서 참조
+4. GDC, PDV, SSO 등 기술 개념은 쉽게 설명
+5. 답변은 간결하게 (모바일 기준 500자 이내 권장)
+6. 모르는 내용은 솔직히 "해당 문서가 아직 없습니다"라고 안내
+
+## 플랫폼 핵심 정보
+- Gopang = AI 평행 세계 플랫폼, 14개 서브시스템
+- GDC(고팡디지털커런시): ₮1 = KRW 1,000 (제주 파일럿 기준)
+- PDV(개인데이터금고): OpenHash 분산원장 기반 개인정보 보관
+- 배포: GitHub Pages + Cloudflare Workers + Supabase
+- DAWN: Democracy is All We Need (핵심 철학)`;
+}
+
+// ── UI 헬퍼 ───────────────────────────────────────
+function addAiMessage(text) {
+  const body = document.getElementById('chat-body');
+  const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  const html = markdownLite(text);
+  const el = document.createElement('div');
+  el.className = 'bubble-ai';
+  el.innerHTML = `
+    <div class="ai-avatar">🤖</div>
+    <div class="bubble-ai-inner">
+      <div class="bubble-ai-text">${html}</div>
+      <div class="bubble-ai-time">${now}</div>
+    </div>`;
+  body.appendChild(el);
+  body.scrollTop = body.scrollHeight;
+}
+
+function addUserMessage(text) {
+  const body = document.getElementById('chat-body');
+  const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  const el = document.createElement('div');
+  el.className = 'bubble-user';
+  el.innerHTML = `
+    <div class="bubble-user-text">${escHtml(text)}</div>
+    <div class="bubble-user-time">${now}</div>`;
+  body.appendChild(el);
+  body.scrollTop = body.scrollHeight;
+}
+
+let typingEl = null;
+function showTyping() {
+  isTyping = true;
+  const body = document.getElementById('chat-body');
+  typingEl = document.createElement('div');
+  typingEl.className = 'typing';
+  typingEl.innerHTML = `<div class="ai-avatar">🤖</div><div class="typing-dots"><span></span><span></span><span></span></div>`;
+  body.appendChild(typingEl);
+  body.scrollTop = body.scrollHeight;
+}
+function hideTyping() {
+  isTyping = false;
+  typingEl?.remove();
+  typingEl = null;
+}
+
+function markdownLite(t) {
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+    .replace(/`(.+?)`/g,'<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px">$1</code>')
+    .replace(/\n/g,'<br>');
+}
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

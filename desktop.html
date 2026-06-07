@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Gopang QnA — AI 지식 도우미</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8fafc;--sur:#fff;
+  --bd:rgba(0,0,0,.08);--bd2:rgba(0,0,0,.15);
+  --t1:#0f172a;--t2:#475569;--t3:#94a3b8;
+  --green:#3ecf8e;--green-bg:rgba(62,207,142,.08);--green-bd:rgba(62,207,142,.25);
+  --green-dk:#2a9d6f;
+  --font:'Pretendard',-apple-system,sans-serif;
+  --r:6px;--r2:10px;
+
+  /* 사이드바 */
+  --sb-w-collapsed:48px;
+  --sb-w-expanded:220px;
+  --sb-bg:#ffffff;
+  --sb-hover:rgba(0,0,0,.04);
+  --sb-active:rgba(62,207,142,.10);
+  --sb-text:#475569;
+  --sb-text-dim:#94a3b8;
+  --sb-sep:rgba(0,0,0,.07);
+  --sb-brand:#3ecf8e;
+  --sb-trans:width 220ms cubic-bezier(.4,0,.2,1),box-shadow 220ms;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#0f172a;--sur:#1e293b;--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.18);
+        --t1:#f1f5f9;--t2:#94a3b8;--t3:#475569;
+        --sb-bg:#1e293b;--sb-hover:rgba(255,255,255,.05);--sb-sep:rgba(255,255,255,.07);
+        --sb-text:#94a3b8;--sb-text-dim:#475569}
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);font-size:14px;color:var(--t1);background:var(--bg);
+  -webkit-font-smoothing:antialiased;line-height:1.6;padding-left:var(--sb-w-collapsed)}
+
+/* ── 사이드바 ── */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;
+  width:var(--sb-w-collapsed);
+  background:var(--sb-bg);
+  border-right:1px solid var(--sb-sep);
+  display:flex;flex-direction:column;
+  z-index:200;overflow:hidden;
+  transition:var(--sb-trans);
+}
+.sidebar:hover{width:var(--sb-w-expanded);box-shadow:2px 0 20px rgba(0,0,0,.12)}
+.sb-logo{
+  display:flex;align-items:center;gap:10px;
+  padding:0 12px;height:56px;
+  border-bottom:.5px solid var(--sb-sep);
+  flex-shrink:0;overflow:hidden;white-space:nowrap;text-decoration:none;
+}
+.sb-logo-mark{
+  width:24px;height:24px;background:var(--sb-brand);border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:13px;font-weight:700;flex-shrink:0;
+}
+.sb-logo-text{font-size:13px;font-weight:600;color:var(--t1);opacity:0;transition:opacity 160ms ease 30ms}
+.sidebar:hover .sb-logo-text{opacity:1}
+.sb-section-label{
+  padding:14px 14px 3px;font-size:10px;font-weight:500;letter-spacing:.08em;
+  color:var(--sb-text-dim);text-transform:uppercase;white-space:nowrap;
+  opacity:0;transition:opacity 140ms ease;
+}
+.sidebar:hover .sb-section-label{opacity:1}
+.sb-nav{flex:1;overflow:hidden;padding:6px 6px 0;display:flex;flex-direction:column}
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:0 8px;height:36px;
+  border-radius:6px;color:var(--sb-text);white-space:nowrap;
+  text-decoration:none;cursor:pointer;
+  transition:background .12s,color .12s;font-size:13px;
+}
+.sb-item:hover{background:var(--sb-hover)}
+.sb-item.active{background:var(--sb-active);color:var(--green-dk)}
+.sb-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.sb-label{opacity:0;transition:opacity 140ms ease 30ms;font-size:13px}
+.sidebar:hover .sb-label{opacity:1}
+.sb-footer{padding:10px 6px;border-top:.5px solid var(--sb-sep);flex-shrink:0}
+
+/* ── 메인 레이아웃 ── */
+.main{
+  display:grid;
+  grid-template-columns:300px 1fr;
+  height:100vh;
+}
+
+/* ── 왼쪽: 문서 패널 ── */
+.doc-panel{
+  background:var(--sur);
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.doc-panel-header{
+  padding:16px 20px 12px;
+  border-bottom:1px solid var(--bd);
+  flex-shrink:0;
+}
+.doc-panel-title{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:8px}
+.doc-search{
+  width:100%;padding:7px 12px;
+  background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);
+  font-family:var(--font);font-size:13px;color:var(--t1);outline:none;
+  transition:border-color .15s;
+}
+.doc-search:focus{border-color:var(--green)}
+.doc-list{flex:1;overflow-y:auto;padding:8px}
+.doc-cat-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--t3);
+  text-transform:uppercase;padding:10px 8px 4px;
+}
+.doc-item{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:8px 10px;border-radius:var(--r);cursor:pointer;
+  transition:background .12s;margin-bottom:2px;
+}
+.doc-item:hover{background:var(--bg)}
+.doc-item.selected{background:var(--green-bg);border:1px solid var(--green-bd)}
+.doc-item-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.doc-item-info{flex:1;min-width:0}
+.doc-item-title{font-size:13px;font-weight:500;color:var(--t1);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-item-cat{font-size:11px;color:var(--t3);margin-top:1px}
+
+/* ── 오른쪽: 채팅 패널 ── */
+.chat-panel{display:flex;flex-direction:column;height:100vh;background:var(--bg)}
+.chat-header{
+  padding:14px 24px;background:var(--sur);
+  border-bottom:1px solid var(--bd);flex-shrink:0;
+  display:flex;align-items:center;gap:12px;
+}
+.chat-header-icon{width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#3ecf8e,#2a9d6f);
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.chat-header-info{flex:1}
+.chat-header-title{font-size:15px;font-weight:600;color:var(--t1)}
+.chat-header-sub{font-size:12px;color:var(--t3);margin-top:1px}
+.chat-header-badge{
+  background:var(--green-bg);color:var(--green-dk);
+  border:1px solid var(--green-bd);border-radius:20px;
+  padding:3px 10px;font-size:11px;font-weight:600;
+}
+.clear-btn{padding:6px 12px;background:var(--bg);border:1px solid var(--bd);
+  border-radius:var(--r);font-family:var(--font);font-size:12px;color:var(--t2);cursor:pointer}
+.clear-btn:hover{background:var(--sur)}
+
+/* 채팅 바디 */
+#chat-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px}
+.bubble-ai{display:flex;gap:10px;max-width:80%;align-self:flex-start}
+.ai-avatar{width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#3ecf8e,#2a9d6f);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.bubble-ai-inner{display:flex;flex-direction:column;gap:3px}
+.bubble-ai-text{
+  background:var(--sur);border:1px solid var(--bd);border-radius:0 12px 12px 12px;
+  padding:12px 16px;font-size:14px;line-height:1.65;color:var(--t1);
+  box-shadow:0 1px 4px rgba(0,0,0,.05);word-break:break-word;
+}
+.bubble-ai-text b{font-weight:600;color:var(--green-dk)}
+.bubble-ai-text code{background:var(--bg);padding:1px 5px;border-radius:3px;font-size:12px;
+  border:1px solid var(--bd)}
+.bubble-ai-meta{font-size:11px;color:var(--t3);padding-left:4px;display:flex;gap:6px;align-items:center}
+.bubble-user{display:flex;flex-direction:column;align-items:flex-end;max-width:75%;align-self:flex-end}
+.bubble-user-text{
+  background:var(--green);border-radius:12px 12px 0 12px;
+  padding:12px 16px;font-size:14px;line-height:1.6;color:#fff;word-break:break-word;
+}
+.bubble-user-meta{font-size:11px;color:var(--t3);margin-top:3px;text-align:right}
+
+/* 타이핑 */
+.typing{display:flex;align-items:flex-end;gap:10px;align-self:flex-start}
+.typing-dots{background:var(--sur);border:1px solid var(--bd);border-radius:12px;
+  padding:12px 16px;display:flex;gap:5px}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:#6ee7b7;animation:typingDot 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes typingDot{0%,60%,100%{transform:none;opacity:.5}30%{transform:translateY(-6px);opacity:1}}
+
+/* 빠른 칩 */
+.quick-chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 12px}
+.chip{
+  background:var(--sur);border:1px solid var(--bd);border-radius:20px;
+  padding:6px 14px;font-size:13px;color:var(--green-dk);cursor:pointer;
+  transition:background .12s,border-color .12s;font-family:var(--font);
+}
+.chip:hover{background:var(--green-bg);border-color:var(--green-bd)}
+
+/* 입력 영역 */
+.input-area{
+  background:var(--sur);border-top:1px solid var(--bd);
+  padding:16px 24px;display:flex;gap:10px;align-items:flex-end;flex-shrink:0;
+}
+.input-wrap{
+  flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r2);
+  display:flex;align-items:flex-end;padding:10px 14px;
+  transition:border-color .15s,box-shadow .15s;
+}
+.input-wrap:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(62,207,142,.12)}
+#msg-input{
+  flex:1;background:none;border:none;outline:none;font-family:var(--font);
+  font-size:14px;color:var(--t1);resize:none;max-height:120px;line-height:1.5;
+}
+#msg-input::placeholder{color:var(--t3)}
+.send-btn{
+  padding:10px 20px;background:var(--green);color:#fff;border:none;
+  border-radius:var(--r);font-family:var(--font);font-size:14px;font-weight:600;
+  cursor:pointer;transition:background .15s;white-space:nowrap;
+}
+.send-btn:disabled{background:#c7c7cc;cursor:not-allowed}
+.send-btn:not(:disabled):hover{background:var(--green-dk)}
+
+/* 로딩 */
+#auth-loading{position:fixed;inset:0;z-index:9999;background:var(--sur);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.spinner{width:28px;height:28px;border:3px solid #d1fae5;border-top-color:var(--green);
+  border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="auth-loading">
+  <div class="spinner"></div>
+  <div style="font-size:14px;color:var(--t3)">고팡 인증 확인 중…</div>
+</div>
+
+<!-- 사이드바 -->
+<nav class="sidebar">
+  <a class="sb-logo" href="https://gopang.net">
+    <div class="sb-logo-mark">G</div>
+    <span class="sb-logo-text">고팡 홈으로</span>
+  </a>
+  <div class="sb-section-label">서비스</div>
+  <div class="sb-nav">
+    <a class="sb-item active" href="#">
+      <div class="sb-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div>
+      <span class="sb-label">QnA 도우미</span>
+    </a>
+    <a class="sb-item" href="https://klaw.gopang.net">
+      <div class="sb-icon"><svg viewBox="0 0 24 24"><path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg></div>
+      <span class="sb-label">K-Law</span>
+    </a>
+    <a class="sb-item" href="https://health.gopang.net">
+      <div class="sb-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <span class="sb-label">K-Health</span>
+    </a>
+    <a class="sb-item" href="https://911.gopang.net">
+      <div class="sb-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <span class="sb-label">K-119</span>
+    </a>
+    <a class="sb-item" href="https://police.gopang.net">
+      <div class="sb-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <span class="sb-label">K-Police</span>
+    </a>
+  </div>
+  <div class="sb-footer">
+    <div class="sb-item" id="sb-user">
+      <div class="sb-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <span class="sb-label" id="sb-user-name">—</span>
+    </div>
+  </div>
+</nav>
+
+<!-- 메인 -->
+<div class="main" id="app" style="display:none">
+  <!-- 왼쪽: 문서 패널 -->
+  <div class="doc-panel">
+    <div class="doc-panel-header">
+      <div class="doc-panel-title">지식 문서</div>
+      <input class="doc-search" id="doc-search" placeholder="문서 검색…" oninput="filterDocs(this.value)">
+    </div>
+    <div class="doc-list" id="doc-list">
+      <div style="padding:20px;text-align:center;color:var(--t3);font-size:13px">문서 로드 중…</div>
+    </div>
+  </div>
+
+  <!-- 오른쪽: 채팅 패널 -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-header-icon">🤖</div>
+      <div class="chat-header-info">
+        <div class="chat-header-title">Gopang QnA AI</div>
+        <div class="chat-header-sub" id="chat-header-sub">AI 지식 도우미 · Powered by DeepSeek</div>
+      </div>
+      <div class="chat-header-badge" id="user-badge">—</div>
+      <button class="clear-btn" onclick="clearChat()">대화 초기화</button>
+    </div>
+
+    <div id="chat-body"></div>
+
+    <div class="quick-chips" id="quick-chips">
+      <div class="chip" onclick="sendQuick('고팡 시스템이란 무엇인가요?')">고팡이란?</div>
+      <div class="chip" onclick="sendQuick('제주도 파일럿 전략을 설명해주세요')">제주 파일럿</div>
+      <div class="chip" onclick="sendQuick('GDC는 어떻게 작동하나요?')">GDC 구조</div>
+      <div class="chip" onclick="sendQuick('14개 서브시스템 목록과 역할을 알려주세요')">서브시스템</div>
+      <div class="chip" onclick="sendQuick('K-Law 판결 시뮬레이터 출력 형식을 설명해주세요')">K-Law 형식</div>
+      <div class="chip" onclick="sendQuick('TF 구성원 역할과 보상 구조가 궁금합니다')">TF 구성</div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrap">
+        <textarea id="msg-input" rows="1"
+          placeholder="고팡 시스템에 대해 무엇이든 물어보세요…"
+          oninput="autoResize(this)"
+          onkeydown="handleKey(event)"></textarea>
+      </div>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>전송</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+// ── 상태 ──────────────────────────────────────────
+let gopangUser = null;
+let chatHistory = [];
+let isTyping = false;
+let docsLoaded = [];
+let selectedDoc = null;
+
+// ── 인증 ──────────────────────────────────────────
+window.addEventListener('message', e => {
+  if (e.data?.type === 'GOPANG_AUTH') initApp(e.data.user);
+});
+window.addEventListener('load', () => {
+  const p = new URLSearchParams(location.search);
+  const ctx = p.get('ctx');
+  if (ctx) { try { initApp(JSON.parse(atob(ctx))); return; } catch(e){} }
+  if (window.parent !== window)
+    window.parent.postMessage({type:'GOPANG_AUTH_REQUEST', svc:'qna'}, '*');
+  setTimeout(() => { if (!gopangUser) initApp({name:'게스트', guid:'guest', plan:'free'}); }, 2000);
+});
+
+function initApp(user) {
+  gopangUser = user;
+  document.getElementById('auth-loading').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  document.getElementById('user-badge').textContent = user.name || '게스트';
+  document.getElementById('sb-user-name').textContent = user.name || '게스트';
+  document.getElementById('msg-input').addEventListener('input', () => {
+    document.getElementById('send-btn').disabled = !document.getElementById('msg-input').value.trim();
+  });
+  loadDocIndex().then(() => {
+    addAiMessage(`안녕하세요, **${user.name || '게스트'}**님!\n\nGopang 시스템 지식 도우미입니다. 현재 **${docsLoaded.length}개** 문서가 로드되어 있습니다.\n\n왼쪽 패널에서 문서를 선택하거나, 아래 빠른 질문을 눌러보세요.`, '시스템');
+  });
+}
+
+// ── 문서 인덱스 ────────────────────────────────────
+async function loadDocIndex() {
+  try {
+    const r = await fetch('docs/index.json');
+    const data = await r.json();
+    docsLoaded = data.docs || [];
+    renderDocList(docsLoaded);
+  } catch(e) { docsLoaded = []; renderDocList([]); }
+}
+
+const CAT_ICON = {strategy:'📊', pilot:'🗺️', subsystems:'⚙️', ops:'🏗️'};
+const CAT_LABEL = {strategy:'확산전략·사업화', pilot:'파일럿·지역 적용', subsystems:'서브시스템', ops:'운영·조직'};
+
+function renderDocList(docs) {
+  const el = document.getElementById('doc-list');
+  if (!docs.length) { el.innerHTML='<div style="padding:20px;color:var(--t3);font-size:13px;text-align:center">문서 없음</div>'; return; }
+  const byCat = {};
+  docs.forEach(d => { (byCat[d.cat]||(byCat[d.cat]=[])).push(d); });
+  let html = '';
+  for (const [cat, items] of Object.entries(byCat)) {
+    html += `<div class="doc-cat-label">${CAT_LABEL[cat]||cat}</div>`;
+    items.forEach(d => {
+      const sel = selectedDoc?.file === d.file ? ' selected' : '';
+      html += `<div class="doc-item${sel}" onclick="selectDoc(${JSON.stringify(d).replace(/"/g,'&quot;')})">
+        <div class="doc-item-icon">${CAT_ICON[d.cat]||'📄'}</div>
+        <div class="doc-item-info">
+          <div class="doc-item-title">${d.title}</div>
+          <div class="doc-item-cat">${CAT_LABEL[d.cat]||d.cat}</div>
+        </div>
+      </div>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
+function filterDocs(q) {
+  const filtered = docsLoaded.filter(d =>
+    d.title.toLowerCase().includes(q.toLowerCase()) ||
+    (CAT_LABEL[d.cat]||'').includes(q)
+  );
+  renderDocList(filtered);
+}
+
+function selectDoc(doc) {
+  selectedDoc = doc;
+  renderDocList(docsLoaded);
+  addUserMessage(`"${doc.title}" 문서에 대해 설명해주세요`);
+  chatHistory.push({role:'user', content:`"${doc.title}" 문서의 핵심 내용을 요약해서 설명해주세요.`});
+  showTyping();
+  callAI(`"${doc.title}" 문서의 핵심 내용을 요약해서 설명해주세요.`).then(reply => {
+    hideTyping();
+    addAiMessage(reply, doc.title);
+    chatHistory.push({role:'assistant', content: reply});
+  });
+}
+
+// ── 메시지 ─────────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text || isTyping) return;
+  input.value = ''; input.style.height = '';
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('quick-chips').style.display = 'none';
+
+  addUserMessage(text);
+  chatHistory.push({role:'user', content: text});
+  showTyping();
+  const reply = await callAI(text);
+  hideTyping();
+  addAiMessage(reply);
+  chatHistory.push({role:'assistant', content: reply});
+}
+
+function sendQuick(text) {
+  document.getElementById('msg-input').value = text;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = '';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  document.getElementById('send-btn').disabled = !el.value.trim();
+}
+
+function clearChat() {
+  chatHistory = [];
+  document.getElementById('chat-body').innerHTML = '';
+  document.getElementById('quick-chips').style.display = '';
+  addAiMessage('대화가 초기화되었습니다. 무엇이든 물어보세요!', '시스템');
+}
+
+// ── AI 호출 ───────────────────────────────────────
+async function callAI(question) {
+  const docCtx = selectedDoc ? `\n\n현재 선택된 문서: "${selectedDoc.title}" (${selectedDoc.file})` : '';
+  const systemPrompt = buildSystemPrompt(docCtx);
+  try {
+    const res = await fetch(KQNA_CONFIG.proxyUrl, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        service: KQNA_CONFIG.svc,
+        model:   KQNA_CONFIG.model,
+        max_tokens: KQNA_CONFIG.maxTokens,
+        temperature: KQNA_CONFIG.temperature,
+        system:  systemPrompt,
+        messages: chatHistory.slice(-12),
+        guid: gopangUser?.guid || 'guest',
+      })
+    });
+    const data = await res.json();
+    return data.content?.[0]?.text || data.choices?.[0]?.message?.content || '응답을 가져오지 못했습니다.';
+  } catch(e) { return '네트워크 오류. 잠시 후 다시 시도해 주세요.'; }
+}
+
+function buildSystemPrompt(extraCtx='') {
+  const docList = docsLoaded.map(d=>`- [${d.cat}] ${d.title} (${d.file})`).join('\n');
+  return `당신은 Gopang(고팡) 시스템 전문 AI 도우미입니다. AI City Inc. / 팀 주피터가 운영하는 AI 시민 서비스 플랫폼에 대한 질문에 정확하고 친절하게 답합니다.
+
+## 로드된 지식 문서 (${docsLoaded.length}건)
+${docList}${extraCtx}
+
+## 핵심 플랫폼 정보
+- Gopang = AI 평행 세계 플랫폼, 14개 서브시스템 (K-Law, K-119, K-Health, K-Police, K-Market, K-Traffic, K-Tax, GDC, K-School, K-Public, K-Stock, K-Democracy, K-Logistics, K-Insurance, K-Security)
+- GDC(고팡디지털커런시): ₮1 = KRW 1,000 (제주 파일럿 기준)
+- PDV(개인데이터금고): OpenHash 분산원장 기반
+- 인프라: Cloudflare Workers + Supabase + GitHub Pages
+- DAWN: Democracy is All We Need (핵심 철학)
+- 제주도 파일럿: 4단계 × 4주 = 4개월, DAU 2,000명 목표
+
+## 답변 원칙
+1. 문서에 기반한 사실 우선, 추측은 명확히 구분
+2. 한국어 답변, 전문 용어는 풀어서 설명
+3. 구조적이고 명확하게 (소제목, 목록 활용)
+4. 모르는 내용은 "해당 문서가 아직 없습니다"라고 솔직하게
+5. 답변 끝에 관련 문서 참조 제안 가능`;
+}
+
+// ── UI ────────────────────────────────────────────
+function addAiMessage(text, source) {
+  const body = document.getElementById('chat-body');
+  const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  const html = markdownLite(text);
+  const src = source ? `<span style="color:var(--green-dk);font-weight:500">${escHtml(source)}</span> ·` : '';
+  const el = document.createElement('div');
+  el.className = 'bubble-ai';
+  el.innerHTML = `
+    <div class="ai-avatar">🤖</div>
+    <div class="bubble-ai-inner">
+      <div class="bubble-ai-text">${html}</div>
+      <div class="bubble-ai-meta">${src} ${now}</div>
+    </div>`;
+  body.appendChild(el);
+  body.scrollTop = body.scrollHeight;
+}
+
+function addUserMessage(text) {
+  const body = document.getElementById('chat-body');
+  const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  const el = document.createElement('div');
+  el.className = 'bubble-user';
+  el.innerHTML = `
+    <div class="bubble-user-text">${escHtml(text)}</div>
+    <div class="bubble-user-meta">${now}</div>`;
+  body.appendChild(el);
+  body.scrollTop = body.scrollHeight;
+}
+
+let typingEl = null;
+function showTyping() {
+  isTyping = true;
+  const body = document.getElementById('chat-body');
+  typingEl = document.createElement('div');
+  typingEl.className = 'typing';
+  typingEl.innerHTML = `<div class="ai-avatar">🤖</div><div class="typing-dots"><span></span><span></span><span></span></div>`;
+  body.appendChild(typingEl);
+  body.scrollTop = body.scrollHeight;
+}
+function hideTyping() { isTyping=false; typingEl?.remove(); typingEl=null; }
+
+function markdownLite(t) {
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/^#{1,3}\s+(.+)$/gm,'<strong style="display:block;margin-top:8px;color:var(--t1)">$1</strong>')
+    .replace(/^[-*]\s+(.+)$/gm,'<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:4px;color:var(--green)">·</span>$1</div>')
+    .replace(/\n\n/g,'<br><br>')
+    .replace(/\n/g,'<br>');
+}
+function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>

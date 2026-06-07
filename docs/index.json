@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "docs": [
+    {
+      "file": "docs/strategy/Gopang_확산전략_사업화계획.md",
+      "title": "Gopang 확산전략 & 사업화계획",
+      "cat": "strategy"
+    },
+    {
+      "file": "docs/strategy/Gopang_확산전략_사업화계획_정리본.md",
+      "title": "Gopang 확산전략 & 사업화계획 (정리본)",
+      "cat": "strategy"
+    },
+    {
+      "file": "docs/ops/Gopang_OFP_표준화계획서.md",
+      "title": "Gopang OFP 표준화계획서",
+      "cat": "ops"
+    },
+    {
+      "file": "docs/ops/Gopang_태스크포스_구성안.md",
+      "title": "Gopang 제주도 파일럿 태스크포스 구성안",
+      "cat": "ops"
+    },
+    {
+      "file": "docs/pilot/Gopang_제주도_우선적용방안.md",
+      "title": "Gopang × 제주도 우선 적용 방안 v2.0",
+      "cat": "pilot"
+    },
+    {
+      "file": "docs/pilot/Gopang_한림읍_스타트업_마스터플랜.md",
+      "title": "Gopang × 한림읍 스타트업 마스터플랜",
+      "cat": "pilot"
+    },
+    {
+      "file": "docs/subsystems/가상판결_출력형식_v13_2.md",
+      "title": "K-Law 가상판결 출력형식 v13.2",
+      "cat": "subsystems"
+    }
+  ]
+}
