@@ -92,6 +92,13 @@ html,body{height:100%;height:100dvh;overflow:hidden;
 .send-btn:disabled{background:#c7c7cc;cursor:not-allowed}
 .send-btn svg{width:16px;height:16px;fill:#fff}
 
+/* 마이크 버튼 */
+.mic-btn{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:1px solid var(--sep);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:background .15s}
+.mic-btn.active{background:#fee2e2;border-color:#fca5a5}
+.mic-btn svg{width:15px;height:15px;stroke:#64748b;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mic-btn.active svg{stroke:#ef4444}
+
 /* 로딩 */
 #auth-loading{position:fixed;inset:0;z-index:9999;background:var(--surface);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
@@ -135,8 +142,11 @@ html,body{height:100%;height:100dvh;overflow:hidden;
   <div class="input-area">
     <div class="input-wrap">
       <textarea id="msg-input" rows="1" placeholder="고팡에 대해 무엇이든 물어보세요…"
-        oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+        oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea>
     </div>
+    <button class="mic-btn" id="mic-btn" onclick="toggleMic()">
+      <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+    </button>
     <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
       <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
     </button>
@@ -151,6 +161,13 @@ let chatHistory = [];
 let isTyping = false;
 let docsLoaded = [];
 
+// ── updateSendBtn — 단일 진실의 원천 ──────────────
+function updateSendBtn() {
+  const inp = document.getElementById('msg-input');
+  const btn = document.getElementById('send-btn');
+  if (btn) btn.disabled = !inp.value.trim();
+}
+
 // ── 인증 ──────────────────────────────────────────
 window.addEventListener('message', e => {
   if (e.data?.type === 'GOPANG_AUTH') initApp(e.data.user);
@@ -159,13 +176,11 @@ window.addEventListener('load', () => {
   const p = new URLSearchParams(location.search);
   const ctx = p.get('ctx');
   if (ctx) {
-    try { initApp(JSON.parse(atob(ctx))); return; } catch(e){}
+    try { initApp(JSON.parse(atob(ctx))); return; } catch(e) {}
   }
-  // subsystem-auth.js 패턴 (gopang.net 인증)
   if (window.parent !== window) {
     window.parent.postMessage({type:'GOPANG_AUTH_REQUEST', svc:'qna'}, '*');
   }
-  // 2초 후 게스트 폴백
   setTimeout(() => {
     if (!gopangUser) initApp({name:'게스트', guid:'guest', plan:'free'});
   }, 2000);
@@ -176,9 +191,7 @@ function initApp(user) {
   document.getElementById('auth-loading').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('auth-badge').textContent = user.name || '게스트';
-  document.getElementById('msg-input').addEventListener('input', () => {
-    document.getElementById('send-btn').disabled = !document.getElementById('msg-input').value.trim();
-  });
+  // ★ input 이벤트는 oninput="updateSendBtn()" 어트리뷰트로 처리 — 이중 등록 제거
   loadDocIndex().then(() => {
     addAiMessage(`안녕하세요, **${user.name || '게스트'}**님! 👋\n\nGopang 시스템에 대한 질문에 답해드립니다.\n현재 **${docsLoaded.length}개** 문서가 로드되어 있습니다. 무엇이든 물어보세요!`);
   });
@@ -205,7 +218,7 @@ async function sendMessage() {
   if (!text || isTyping) return;
   input.value = '';
   input.style.height = '';
-  document.getElementById('send-btn').disabled = true;
+  updateSendBtn();
 
   addUserMessage(text);
   chatHistory.push({role:'user', content: text});
@@ -216,10 +229,12 @@ async function sendMessage() {
 
   addAiMessage(reply);
   chatHistory.push({role:'assistant', content: reply});
+  _recordPdv(text, reply);
 }
 
 function sendQuick(text) {
   document.getElementById('msg-input').value = text;
+  updateSendBtn();
   sendMessage();
 }
 
@@ -230,7 +245,6 @@ function handleKey(e) {
 function autoResize(el) {
   el.style.height = '';
   el.style.height = Math.min(el.scrollHeight, 100) + 'px';
-  document.getElementById('send-btn').disabled = !el.value.trim();
 }
 
 // ── AI 호출 ───────────────────────────────────────
@@ -278,6 +292,33 @@ ${docList}
 - PDV(개인데이터금고): OpenHash 분산원장 기반 개인정보 보관
 - 배포: GitHub Pages + Cloudflare Workers + Supabase
 - DAWN: Democracy is All We Need (핵심 철학)`;
+}
+
+// ── PDV 표준 payload { user_guid, source, report: { pdv_6w } }
+const PROXY = 'https://gopang-proxy.tensor-city.workers.dev';
+function _recordPdv(userMsg, aiReply) {
+  try {
+    const user_guid = gopangUser?.guid || 'anonymous';
+    const payload = {
+      user_guid,
+      source: 'kqna',
+      report: {
+        pdv_6w: {
+          who:   user_guid,
+          when:  new Date().toISOString(),
+          where: location.href,
+          what:  'Gopang QnA AI 채팅',
+          how:   `질문: ${userMsg.slice(0, 60)}`,
+          why:   'Gopang 시스템 지식 문의',
+        },
+      },
+    };
+    fetch(`${PROXY}/pdv_log`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  } catch(e) { console.warn('[PDV]', e.message); }
 }
 
 // ── UI 헬퍼 ───────────────────────────────────────
@@ -334,6 +375,83 @@ function markdownLite(t) {
 }
 function escHtml(t) {
   return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── 마이크 — v3.6 패턴 ───────────────────────────
+let micActive = false;
+let recognition = null;
+let mediaRecorder = null;
+let audioChunks = [];
+
+function _micSetUI(active) {
+  micActive = active;
+  const btn = document.getElementById('mic-btn');
+  if (btn) btn.classList.toggle('active', active);
+}
+
+function _micStartWebSpeech(SR) {
+  recognition = new SR();
+  recognition.lang           = 'ko-KR';
+  recognition.continuous     = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (e) => {
+    const t = e.results[0][0].transcript;
+    const input = document.getElementById('msg-input');
+    if (input && t) {
+      input.value = t;
+      autoResize(input);   // ★ 직접 호출
+      updateSendBtn();     // ★ 직접 호출
+    }
+    _micSetUI(false);
+    setTimeout(sendMessage, 100);
+  };
+
+  recognition.onerror = (e) => {
+    _micSetUI(false);
+    console.warn('[Mic] 오류:', e.error);
+  };
+
+  recognition.onend = () => { _micSetUI(false); };
+
+  recognition.start();
+  _micSetUI(true);
+}
+
+async function _micStartMediaRecorder() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      _micSetUI(false);
+    };
+    mediaRecorder.start();
+    _micSetUI(true);
+  } catch(e) {
+    _micSetUI(false);
+  }
+}
+
+function toggleMic() {
+  if (micActive) {
+    if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    _micSetUI(false);
+    return;
+  }
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!isIOS && SR) {
+    _micStartWebSpeech(SR);
+  } else if (isIOS && window.MediaRecorder) {
+    _micStartMediaRecorder();
+  } else {
+    console.warn('[Mic] 음성 인식 미지원 브라우저');
+  }
 }
 </script>
 </body>
