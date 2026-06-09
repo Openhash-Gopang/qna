@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이종 LLM 기반 대립 논증·판정 자동화 시스템 — 특허출원서</title>
+<style>
+  :root {
+    --gov-blue: #003087;
+    --gov-blue-mid: #004ea2;
+    --gov-blue-light: #e8f0fb;
+    --gov-green: #006633;
+    --gov-green-light: #e8f5ed;
+    --gov-accent: #b8860b;
+    --text-primary: #1a1a1a;
+    --text-secondary: #444;
+    --border: #c8d6ea;
+    --bg: #f7f9fc;
+    --white: #fff;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .gov-header {
+    background: var(--gov-green);
+    color: var(--white);
+    border-bottom: 4px solid var(--gov-accent);
+  }
+  .gov-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 32px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .gov-emblem {
+    width: 56px; height: 56px;
+    background: var(--white);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 24px; margin-top: 2px;
+  }
+  .gov-header-text { flex: 1; }
+  .gov-agency { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: .75; margin-bottom: 4px; }
+  .gov-doc-title { font-size: 22px; font-weight: 700; letter-spacing: -.5px; line-height: 1.3; margin-bottom: 6px; }
+  .gov-doc-subtitle { font-size: 12px; opacity: .8; letter-spacing: .5px; }
+  .gov-header-meta { text-align: right; font-size: 11px; opacity: .7; line-height: 1.9; flex-shrink: 0; }
+
+  .nav-bar {
+    background: #005a2b;
+    border-bottom: 1px solid rgba(255,255,255,.15);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-bar-inner {
+    max-width: 1100px; margin: 0 auto;
+    padding: 0 32px;
+    display: flex; gap: 0; overflow-x: auto;
+  }
+  .nav-bar a {
+    color: rgba(255,255,255,.85);
+    text-decoration: none; font-size: 12.5px;
+    padding: 10px 16px; display: block; white-space: nowrap;
+    border-bottom: 2px solid transparent; transition: all .15s;
+  }
+  .nav-bar a:hover { color: #fff; border-bottom-color: var(--gov-accent); background: rgba(255,255,255,.06); }
+
+  .main-wrap {
+    max-width: 1100px; margin: 0 auto;
+    padding: 32px 32px 64px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 32px; align-items: start;
+  }
+  .sidebar { position: sticky; top: 42px; }
+  .sidebar-box {
+    background: var(--white);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 700; color: var(--gov-green);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--gov-green);
+  }
+  .sidebar-toc { list-style: none; }
+  .sidebar-toc li { border-bottom: 1px solid #eef1f7; }
+  .sidebar-toc a {
+    display: block; padding: 7px 0;
+    color: var(--text-secondary); text-decoration: none; font-size: 12.5px;
+    transition: color .12s;
+  }
+  .sidebar-toc a:hover { color: var(--gov-green); padding-left: 4px; }
+  .meta-row { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 1px solid #eef1f7; }
+  .meta-label { color: var(--text-secondary); }
+  .meta-value { font-weight: 600; }
+
+  .content { min-width: 0; }
+  .status-banner {
+    background: linear-gradient(135deg, var(--gov-green) 0%, #008040 100%);
+    color: var(--white); border-radius: 4px;
+    padding: 20px 24px; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 16px;
+    border-left: 5px solid var(--gov-accent);
+  }
+  .status-icon { font-size: 32px; flex-shrink: 0; }
+  .status-text h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .status-text p { font-size: 12.5px; opacity: .85; }
+
+  .section {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 4px; margin-bottom: 20px; overflow: hidden;
+  }
+  .section-header {
+    background: var(--gov-green); color: var(--white);
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-number {
+    background: var(--gov-accent); color: #1a1a1a;
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 2px; flex-shrink: 0;
+  }
+  .section-title { font-size: 14px; font-weight: 700; flex: 1; }
+  .section-body { padding: 20px 24px; }
+
+  h3 { font-size: 14px; color: var(--gov-green); font-weight: 700; margin: 20px 0 10px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+  h4 { font-size: 13px; font-weight: 700; margin: 16px 0 8px; }
+  p { margin-bottom: 10px; color: var(--text-secondary); line-height: 1.85; }
+  ul, ol { margin: 8px 0 12px 20px; }
+  li { margin-bottom: 5px; color: var(--text-secondary); line-height: 1.8; }
+
+  .highlight-box {
+    background: var(--gov-green-light);
+    border-left: 4px solid var(--gov-green);
+    padding: 14px 18px; margin: 14px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .highlight-box p { color: var(--text-primary); margin: 0; font-size: 13px; }
+
+  .badge {
+    display: inline-block;
+    background: var(--gov-blue-light);
+    color: var(--gov-blue);
+    font-size: 11px; font-weight: 700;
+    padding: 2px 7px; border-radius: 2px; margin: 0 2px;
+  }
+  .badge-green { background: var(--gov-green-light); color: var(--gov-green); }
+
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+  th { background: var(--gov-green); color: var(--white); padding: 9px 12px; text-align: left; font-size: 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f9fc; }
+  tr:hover td { background: var(--gov-green-light); }
+
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px; margin: 16px 0;
+  }
+  .module-card {
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 12px 10px; text-align: center;
+    background: var(--white);
+    border-top: 3px solid var(--gov-green);
+  }
+  .module-icon { font-size: 22px; margin-bottom: 6px; }
+  .module-num { font-size: 10px; color: #888; margin-bottom: 3px; }
+  .module-name { font-size: 12px; font-weight: 700; color: var(--gov-green); margin-bottom: 4px; }
+  .module-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+
+  .claim-box { border: 1px solid var(--border); border-radius: 4px; margin-bottom: 14px; overflow: hidden; }
+  .claim-header { background: #f0f7f2; border-bottom: 1px solid var(--border); padding: 8px 14px; display: flex; align-items: center; gap: 10px; }
+  .claim-num { background: var(--gov-green); color: var(--white); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 2px; }
+  .claim-label { font-size: 12.5px; font-weight: 600; }
+  .claim-body { padding: 12px 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.85; }
+
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+  .mode-card { border: 1px solid var(--border); border-radius: 4px; padding: 16px; }
+  .mode-card h4 { color: var(--gov-green); margin-top: 0; margin-bottom: 8px; }
+
+  .gov-footer {
+    background: #002b1a; color: rgba(255,255,255,.6);
+    padding: 24px 32px; text-align: center;
+    font-size: 11.5px; line-height: 1.9;
+    border-top: 3px solid var(--gov-accent);
+  }
+
+  @media (max-width: 800px) {
+    .main-wrap { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .module-grid { grid-template-columns: repeat(2, 1fr); }
+    .mode-grid { grid-template-columns: 1fr; }
+    .gov-header-inner { flex-direction: column; }
+    .gov-header-meta { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header class="gov-header">
+  <div class="gov-header-inner">
+    <div class="gov-emblem">⚖️</div>
+    <div class="gov-header-text">
+      <div class="gov-agency">대한민국 특허청 · 특허출원서류</div>
+      <div class="gov-doc-title">이종 대형언어모델 기반<br>대립 논증·판정 자동화 시스템 및 그 운용 방법</div>
+      <div class="gov-doc-subtitle">Automated System for Adversarial Argumentation and Adjudication Based on Heterogeneous Large Language Models, and Method of Operating the Same</div>
+    </div>
+    <div class="gov-header-meta">
+      출원번호: 제10-2026-0039504호<br>
+      분야: AI·법률기술·분쟁해결<br>
+      적용 도메인: 법률·의료·특허·금융·행정
+    </div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <div class="nav-bar-inner">
+    <a href="#summary">요약</a>
+    <a href="#tech">기술분야</a>
+    <a href="#background">배경기술</a>
+    <a href="#modules">핵심모듈</a>
+    <a href="#operation">운용방법</a>
+    <a href="#pdv">PDV·증거</a>
+    <a href="#modes">운용모드</a>
+    <a href="#claims">청구범위</a>
+  </div>
+</nav>
+
+<div class="main-wrap">
+  <aside class="sidebar">
+    <div class="sidebar-box">
+      <div class="sidebar-title">출원 정보</div>
+      <div class="meta-row"><span class="meta-label">출원번호</span><span class="meta-value">10-2026-0039504</span></div>
+      <div class="meta-row"><span class="meta-label">적용 도메인</span><span class="meta-value">5개 이상</span></div>
+      <div class="meta-row"><span class="meta-label">핵심 모듈</span><span class="meta-value">5종</span></div>
+      <div class="meta-row"><span class="meta-label">이종 LLM</span><span class="meta-value">2개 이상 구성</span></div>
+    </div>
+    <div class="sidebar-box">
+      <div class="sidebar-title">목차</div>
+      <ul class="sidebar-toc">
+        <li><a href="#summary">1. 발명 요약</a></li>
+        <li><a href="#tech">2. 기술분야</a></li>
+        <li><a href="#background">3. 배경기술</a></li>
+        <li><a href="#modules">4. 핵심 모듈 구성</a></li>
+        <li><a href="#operation">5. 운용 방법</a></li>
+        <li><a href="#pdv">6. PDV 및 증거 체계</a></li>
+        <li><a href="#modes">7. 운용 모드</a></li>
+        <li><a href="#claims">8. 청구범위</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-box">
+      <div class="sidebar-title">핵심 구성</div>
+      <p style="font-size:12px;color:var(--text-secondary);margin:0;line-height:2;">
+        <span class="badge badge-green">이종 LLM</span> 제조사 다양성<br>
+        <span class="badge badge-green">6단계 규범</span> 위계 강제<br>
+        <span class="badge badge-green">5문 자기검증</span> 논증 품질<br>
+        <span class="badge badge-green">합의 지도</span> JSON 실시간<br>
+        <span class="badge badge-green">PDV+OpenHash</span> 증거 무결성<br>
+        <span class="badge badge-green">VHI·APS·CRI</span> 정량 지표
+      </p>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="status-banner" id="summary">
+      <div class="status-icon">🤖</div>
+      <div class="status-text">
+        <h2>발명의 명칭 및 개요</h2>
+        <p>서로 다른 제조사의 복수 LLM에 제1·제2 대변자 모듈, 논쟁 관리 모듈, 판정 모듈, 절차 관리 모듈의 역할을 각각 부여하고, 구조화된 시스템 프롬프트에 따라 <strong>양측 대변자 간 대립 논증을 자동으로 수행</strong>하며, 상호 합의 및 미합의 쟁점을 분리한 후 별도의 판정 모듈이 판정문을 생성하는 AI 기반 대립 논증·판정 자동화 시스템입니다. 법률·의료·특허·금융·행정 등 대립 논증이 필요한 모든 분야에 적용 가능합니다.</p>
+      </div>
+    </div>
+
+    <!-- 기술분야 -->
+    <div class="section" id="tech">
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <span class="section-title">기술분야</span>
+      </div>
+      <div class="section-body">
+        <p>본 발명은 <strong>인공지능(AI) 기술 분야</strong>에 관한 것으로, 서로 다른 제조사의 복수 LLM을 활용하여 양측 대변자 간 대립 논증을 자동으로 수행하고 판정문을 생성하는 시스템입니다.</p>
+        <div class="highlight-box">
+          <p><strong>적용 도메인:</strong> 법률 분쟁·심판 / 의료 진단 / 특허 심사 / 금융 심사 / 행정 심판 등 대립하는 두 당사자 간의 논증과 판정이 필요한 모든 분야</p>
+        </div>
+        <p>또한 <span class="badge badge-green">분산 원장 기술</span>(OpenHash 네트워크, 블록체인 등)을 활용한 Private Data Vault(PDV) 기반 데이터 인출 메커니즘 및 개인·기관 AI 비서를 통한 사용자 인터페이스 계층에 관한 것입니다.</p>
+      </div>
+    </div>
+
+    <!-- 배경기술 -->
+    <div class="section" id="background">
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <span class="section-title">배경기술 및 기술적 과제</span>
+      </div>
+      <div class="section-body">
+        <h3>종래 기술의 한계</h3>
+        <table>
+          <thead><tr><th>한계</th><th>내용</th></tr></thead>
+          <tbody>
+            <tr><td>① 편향 해석</td><td>단일 LLM만을 활용하여 편향된 해석이 발생할 수 있음</td></tr>
+            <tr><td>② 무한 반복</td><td>AI 대변자가 의뢰인 승리만을 목표로 무한히 논쟁을 반복하여 합의점 미도출</td></tr>
+            <tr><td>③ 규범 오류</td><td>하위 규범을 상위 규범보다 우선시하는 오류 발생</td></tr>
+            <tr><td>④ 취약계층 보호 부재</td><td>사회적 약자의 기본권 침해 여부를 자동 판단하는 메커니즘 부재</td></tr>
+            <tr><td>⑤ 합의 체계 미비</td><td>복수 이종 LLM 간 합의 도출 및 판정문 생성 체계 부재</td></tr>
+            <tr><td>⑥ 통합 허브 부재</td><td>사건 접수부터 결과 집행까지 절차를 자동 관리하는 통합 허브 부재</td></tr>
+            <tr><td>⑦ 인터페이스 미정의</td><td>AI 대변자·판정부·당사자 간 데이터 인터페이스 및 절차 위반 감시 체계 부재</td></tr>
+            <tr><td>⑧ 증거 진실성 문제</td><td>제출 데이터의 위변조 여부를 기술적으로 판별할 수단 없음</td></tr>
+            <tr><td>⑨ 접근성 문제</td><td>당사자와 AI 시스템 간의 인터페이스 미정의로 전문 용어 직접 입력 필요</td></tr>
+          </tbody>
+        </table>
+        <h3>주요 선행기술</h3>
+        <table>
+          <thead><tr><th>선행기술</th><th>유사점</th><th>차이점</th></tr></thead>
+          <tbody>
+            <tr><td>US 2025/0148558 A1 (합성 배심원 심의)</td><td>LLM 기반 법적 심의</td><td>원고/피고 AI 논쟁 구조·규범 위계 DB 미포함</td></tr>
+            <tr><td>KR102022412B1 (법률문서 자동작성)</td><td>사법 절차 관리 일부 유사</td><td>이종 LLM 논쟁 구조·규범 위계 강제 미포함</td></tr>
+            <tr><td>Harvey AI (법률 AI 플랫폼)</td><td>자율적 다단계 작업 수행</td><td>독립 대변자 간 대립 논증 구조 미포함</td></tr>
+            <tr><td>iWeaver AI (특허 분석)</td><td>선행 기술 검색 자동화</td><td>양측 대변자 대립 논증·합의 도출 구조 미포함</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 핵심 모듈 -->
+    <div class="section" id="modules">
+      <div class="section-header">
+        <span class="section-number">03</span>
+        <span class="section-title">핵심 모듈 구성</span>
+      </div>
+      <div class="section-body">
+        <div class="module-grid">
+          <div class="module-card">
+            <div class="module-icon">🧑‍⚖️</div>
+            <div class="module-num">부호 11</div>
+            <div class="module-name">제1 대변자 모듈</div>
+            <div class="module-desc">원고 측 이익 대변. 균형적 대변자 프롬프트·6단계 규범 위계 준수</div>
+          </div>
+          <div class="module-card">
+            <div class="module-icon">🧑‍💼</div>
+            <div class="module-num">부호 12</div>
+            <div class="module-name">제2 대변자 모듈</div>
+            <div class="module-desc">피고 측 이익 대변. 5문 자기검증 테스트 포함</div>
+          </div>
+          <div class="module-card">
+            <div class="module-icon">🔄</div>
+            <div class="module-num">부호 13</div>
+            <div class="module-name">논쟁 관리 모듈</div>
+            <div class="module-desc">NLP 기반 발언 파싱·쟁점 추출·합의 지도 JSON 실시간 생성·트리거 감시</div>
+          </div>
+          <div class="module-card">
+            <div class="module-icon">🏛️</div>
+            <div class="module-num">부호 14</div>
+            <div class="module-name">판정 모듈</div>
+            <div class="module-desc">이종 LLM 2개 이상. 4라운드 합의+교착 해소 5단계. 판정문 생성</div>
+          </div>
+          <div class="module-card">
+            <div class="module-icon">📋</div>
+            <div class="module-num">부호 15</div>
+            <div class="module-name">절차 관리 모듈</div>
+            <div class="module-desc">사건 접수~결과 집행 전 절차 관리. JSON 인터페이스로 전 모듈 연결</div>
+          </div>
+        </div>
+
+        <h3>균형적 대변자 시스템 프롬프트 — 6단계 규범 위계</h3>
+        <div class="highlight-box">
+          <p><strong>보편적 윤리·도덕 → 국제인권법 → 헌법 → 특별법 → 일반법 → 하위 규범</strong><br>하위 규범이 상위 규범과 충돌하는 방식으로 해석·적용될 경우 자동 차단 또는 규범 역전 경고 출력</p>
+        </div>
+
+        <h3>5문 자기검증 테스트</h3>
+        <p>매 반박 전 수행하는 5단계 자기검증으로, 최종 단계에서 <strong>중립 판단 모듈</strong>(판례 데이터 학습)을 호출하여 해당 주장의 예상 기각 확률을 수치화합니다. 기각 확률이 임계값 이상인 경우 주장 철회를 자동 권고합니다.</p>
+
+        <h3>논쟁 종료 트리거 — 5종</h3>
+        <table>
+          <thead><tr><th>트리거</th><th>부호</th><th>발동 조건</th></tr></thead>
+          <tbody>
+            <tr><td>반복 트리거</td><td>50</td><td>유사도 ≥ 임계값(기본 0.85)의 논증이 소정 횟수(기본 3회) 이상 교환</td></tr>
+            <tr><td>가치충돌 트리거</td><td>51</td><td>헌법적 가치 충돌 키워드 교차 추출 + APS &lt; 임계값(기본 0.2)</td></tr>
+            <tr><td>규범역전 트리거</td><td>52</td><td>규범 역전 경고 태그 누적 ≥ 임계값(기본 2회)</td></tr>
+            <tr><td>인도적 한계 트리거</td><td>53</td><td>VHI ≥ 임계값(기본 0.8) + 면제재산 전액 박탈 가능성 키워드</td></tr>
+            <tr><td>증거부재 트리거</td><td>54</td><td>증거 참조 없이 규칙 조문만 ≥ 임계값(기본 3회) 연속 인용</td></tr>
+          </tbody>
+        </table>
+
+        <h3>주요 정량 지표</h3>
+        <table>
+          <thead><tr><th>지표</th><th>부호</th><th>설명</th></tr></thead>
+          <tbody>
+            <tr><td>합의 가능성 점수</td><td>APS (60)</td><td>논쟁 진행 중 양측 합의 가능성을 실시간 수치화</td></tr>
+            <tr><td>취약계층 피해 지수</td><td>VHI (61)</td><td>사회경제적 취약성·생존 위협·분쟁 장기화 피해를 3인자 가중합산</td></tr>
+            <tr><td>불복 실익 지수</td><td>CRI</td><td>규범 위계 적합도·판례 부합도·상위 법원 법리 변경 필요성 종합. CRI 미만 시 소 제기 실익 없음을 자동 고지</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 운용 방법 -->
+    <div class="section" id="operation">
+      <div class="section-header">
+        <span class="section-number">04</span>
+        <span class="section-title">시스템 운용 방법</span>
+      </div>
+      <div class="section-body">
+        <h3>운용 절차 — 6단계</h3>
+        <ol>
+          <li><strong>사건 접수 및 패키지 생성:</strong> 절차 관리 모듈이 분쟁 신청서를 수신하고 JSON 형식의 사건 기록 패키지를 생성하여 양 대변자 모듈에 전달</li>
+          <li><strong>논증 발언 생성 및 교환:</strong> 제1·제2 대변자 모듈이 균형적 대변자 프롬프트 및 위계 규칙 데이터베이스(40) 참조하여 논증 발언 생성, 논쟁 관리 모듈 경유 교환</li>
+          <li><strong>합의 지도 생성 및 트리거 감시:</strong> 논쟁 관리 모듈이 NLP 파싱으로 쟁점 추출, 합의 지도 JSON 실시간 갱신, 논쟁 종료 트리거 발동 여부 감시</li>
+          <li><strong>데이터 검증 및 판정 모듈 이관:</strong> 절차 관리 모듈이 최종 합의 지도 JSON의 스키마·필드·타임스탬프 검증 후 판정 모듈에 전달</li>
+          <li><strong>이종 LLM 판정 및 합의:</strong> 판정 모듈의 이종 LLM들이 독립적으로 판정문 생성, 불일치 시 4라운드 합의+교착 해소 5단계 수행</li>
+          <li><strong>송달 및 집행 관리:</strong> 절차 관리 모듈이 최종 판정문을 수령하여 모든 이해당사자에게 동시 송달, 결과 집행까지 절차 관리</li>
+        </ol>
+
+        <h3>판정 4라운드 합의 절차</h3>
+        <table>
+          <thead><tr><th>라운드</th><th>내용</th></tr></thead>
+          <tbody>
+            <tr><td>80 — 1라운드</td><td>각 LLM 독립 판정문 초안 생성</td></tr>
+            <tr><td>81 — 2라운드</td><td>초안 교차 검토 및 수정 의견 제출</td></tr>
+            <tr><td>82 — 3라운드</td><td>수정 의견 반영 후 재검토</td></tr>
+            <tr><td>83 — 4라운드</td><td>최종 합의 도출 시도</td></tr>
+            <tr><td>84 — 교착 해소 5단계</td><td>4라운드 후에도 불일치 시 교착 해소 절차 수행</td></tr>
+            <tr><td>85 — 인간 전문가 이관</td><td>교착 해소 후에도 합의 불가 시 중간 검토 결과 JSON 첨부하여 이관</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PDV 및 증거 -->
+    <div class="section" id="pdv">
+      <div class="section-header">
+        <span class="section-number">05</span>
+        <span class="section-title">PDV 및 증거 무결성 체계</span>
+      </div>
+      <div class="section-body">
+        <h3>Private Data Vault (PDV, 부호 90)</h3>
+        <p>각 당사자가 보유하거나 신뢰 제3자(TTP)에 위탁 운영하는 암호화된 데이터 저장소입니다. 저장되는 모든 데이터에 대해 즉시 SHA-256 해시값을 산출하여 <span class="badge badge-green">OpenHash 네트워크(91)</span>에 등록하며, BLS 서명 및 Merkle Proof에 의한 계층 간 상호 검증으로 이후의 위변조가 기술적으로 불가능합니다.</p>
+
+        <h3>OpenHash 네트워크 (부호 91)</h3>
+        <table>
+          <thead><tr><th>계층</th><th>명칭</th><th>역할</th></tr></thead>
+          <tbody>
+            <tr><td>Layer 1</td><td>Edge</td><td>즉시 해시 등록 (평균 4ms 이내)</td></tr>
+            <tr><td>Layer 2</td><td>Regional</td><td>지역 단위 집계 및 검증</td></tr>
+            <tr><td>Layer 3</td><td>National</td><td>국가 단위 무결성 보장</td></tr>
+            <tr><td>Layer 4</td><td>Archive</td><td>영구 보존 및 법원 등록</td></tr>
+          </tbody>
+        </table>
+
+        <h3>개인 AI 비서 (PAA, 92) 및 기관 AI 비서 (IAA, 93)</h3>
+        <ul>
+          <li><strong>PAA(92):</strong> 각 개인 당사자에게 1:1 배타 할당. PDV(90)의 유일한 관문(Gate-Keeper). 사용자 동의 없이 PDV 데이터를 외부로 전달하지 않음</li>
+          <li><strong>IAA(93):</strong> 기관에 배정되어 해당 기관의 PDV를 관리</li>
+          <li><strong>증거 패키지 JSON(94):</strong> PAA/IAA가 생성. OpenHash 해시값 일치 여부, 기제출 증거 모순 여부를 포함하여 절차 관리 모듈에 전달</li>
+        </ul>
+
+        <h3>증거 신뢰성 플래그</h3>
+        <table>
+          <thead><tr><th>상황</th><th>플래그</th><th>처리</th></tr></thead>
+          <tbody>
+            <tr><td>분산 원장 등록값 불일치</td><td>위변조 의심</td><td>논쟁 과정에서 자동 배제, 강제 수용 조건 활성화</td></tr>
+            <tr><td>기제출 증거와 내용 모순</td><td>기존 증거 모순</td><td>논쟁 관리 모듈에 통보 및 자동 배제</td></tr>
+            <tr><td>OpenHash 미등록 증거</td><td>미검증 증거 경고</td><td>해당 발언의 논증 가중치 자동 감산</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 운용 모드 -->
+    <div class="section" id="modes">
+      <div class="section-header">
+        <span class="section-number">06</span>
+        <span class="section-title">2대 운용 모드</span>
+      </div>
+      <div class="section-body">
+        <div class="mode-grid">
+          <div class="mode-card">
+            <h4>🏛️ 제1 운용 모드 — 법원 연계형</h4>
+            <p>AI 재판부(14)는 판결문 초안을 생성하는 <strong>보조적 판단 시스템</strong>으로서, 인간 판사의 사법권을 대체하거나 침해하지 않습니다.</p>
+            <ul>
+              <li>AI가 생성한 판결문 초안 송달 전 인간 판사의 최종 확인 필요</li>
+              <li>교착 해소 5단계(84) 수행 후에도 합의 불가 시 반드시 인간 판사(85)에 이관</li>
+              <li>헌법 제101조 및 법원조직법상 사법권이 법관에 귀속됨을 기술적으로 보장</li>
+            </ul>
+          </div>
+          <div class="mode-card">
+            <h4>🤝 제2 운용 모드 — 당사자 합의 자율 분쟁 해결형 (ADR)</h4>
+            <p>분쟁 당사자 간의 <strong>명시적 합의</strong>에 의하여 법원 소송을 대신하는 자율적 분쟁 해결 수단으로 활용됩니다.</p>
+            <ul>
+              <li>AI 재판부의 판정 결과를 최종 해결안으로 수락하기로 사전 합의</li>
+              <li>판정 결과는 당사자 간 계약적 효력을 가지는 구속력 있는 결정으로 기능</li>
+              <li>CRI(불복 실익 지수) 자동 산출·고지로 소 제기 실익 구조적 억제</li>
+            </ul>
+          </div>
+        </div>
+        <h3>ADR 모드에서 소 제기 실익이 낮은 이유</h3>
+        <ol>
+          <li><strong>6단계 규범 위계 강제:</strong> 동일 사실관계에서 상이한 결론 도달을 위해서는 헌법 조항 정면 배제 또는 대법원 판례 변경 수준의 법리 전환 필요</li>
+          <li><strong>법률상 근거 없는 권리 개념 차단:</strong> 위계 규칙 데이터베이스 검색을 통해 시스템 레벨에서 자동 차단</li>
+          <li><strong>합의 지도의 확정력:</strong> 이미 합의된 항목은 법원 소송에서도 재차 다툴 수 없는 사실상 제약</li>
+          <li><strong>CRI 자동 고지:</strong> 규범 위계 적합도·판례 부합도·법리 변경 필요성 종합 산출 후 소 제기 실익 없음 자동 고지</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- 청구범위 -->
+    <div class="section" id="claims">
+      <div class="section-header">
+        <span class="section-number">07</span>
+        <span class="section-title">청구범위 (주요 청구항)</span>
+      </div>
+      <div class="section-body">
+        <div class="claim-box">
+          <div class="claim-header"><span class="claim-num">청구항 1</span><span class="claim-label">AI 기반 분쟁·심판 자동화 시스템 (기본 구성)</span></div>
+          <div class="claim-body">
+            제1·제2 대변자 모듈에는 의뢰인 대변자와 객관적 법률가의 이중적 역할을 정의하고 충돌 시 객관성을 우선하며 <strong>6단계 규범 위계 준수를 강제하는 균형적 대변자 시스템 프롬프트</strong>가 적용된 하나 이상의 LLM이 구현됩니다. 논쟁 관리 모듈은 NLP로 발언을 파싱하여 쟁점을 추출하고 복수의 논쟁 종료 트리거를 감시하며 합의 지도 JSON을 실시간 생성·갱신합니다. 판정 모듈은 이종 LLM 2개 이상이 독립적으로 판정문을 생성하되 불일치 시 복수 라운드 합의 절차 및 교착 해소 단계를 수행합니다. 절차 관리 모듈은 판정 기능을 제외한 모든 절차를 관리·조율하며 JSON 인터페이스로 전 모듈을 연결하되 시비 판단·법리 해석·어느 당사자에게 유리한 의견 제시를 수행하지 않습니다.
+          </div>
+        </div>
+
+        <div class="claim-box">
+          <div class="claim-header"><span class="claim-num">청구항 3</span><span class="claim-label">논쟁 종료 트리거 5종 구성</span></div>
+          <div class="claim-body">
+            반복 트리거(50), 가치충돌 트리거(51), 규범역전 트리거(52), 인도적 한계 트리거(53), 증거부재 트리거(54)를 포함하며, 각 트리거의 유사도 임계값·횟수·APS 임계값·VHI 임계값은 소정의 범위 내에서 가변적으로 조정 가능한 것을 특징으로 하는, AI 기반 분쟁·심판 자동화 시스템.
+          </div>
+        </div>
+
+        <div class="claim-box">
+          <div class="claim-header"><span class="claim-num">청구항 7</span><span class="claim-label">취약계층 자동 보호 체계</span></div>
+          <div class="claim-body">
+            절차 관리 모듈은 기초생활수급자, 장애인, 미성년자, 고령자, 외국인, 정신건강 이슈 보유자를 포함하는 취약계층을 자동 분류하고 무료 대변자 모듈을 자동 배정하며, VHI(61)가 긴급 임계값 이상인 사건에 대해 소정 기간 내 기일 지정, 긴급 플래그 부착, 강제 수용 조건 자동 활성화를 포함하는 4개 이상의 자동 보호 조치를 연쇄 실행하는 것을 특징으로 하는, AI 기반 분쟁·심판 자동화 시스템.
+          </div>
+        </div>
+
+        <div class="claim-box">
+          <div class="claim-header"><span class="claim-num">청구항 11</span><span class="claim-label">PDV + OpenHash 증거 무결성 체계</span></div>
+          <div class="claim-body">
+            각 당사자가 보유하거나 TTP에 위탁 운영하는 PDV(90)는 저장되는 모든 데이터에 대해 즉시 SHA-256 해시값을 산출하여 분산 원장 네트워크(91)에 등록하며, BLS 서명 및 Merkle Proof에 의한 계층 간 상호 검증으로 이후의 위변조가 기술적으로 불가능하고, 논쟁 관리 모듈은 위변조 의심·기존 증거 모순 플래그를 부착하고 해당 증거를 근거로 하는 주장에 대해 강제 수용 조건을 자동 활성화하는 것을 특징으로 하는, AI 기반 분쟁·심판 자동화 시스템.
+          </div>
+        </div>
+
+        <div class="claim-box">
+          <div class="claim-header"><span class="claim-num">청구항 15</span><span class="claim-label">다도메인 적용 가능 구조</span></div>
+          <div class="claim-body">
+            각 모듈은 서로 다른 제조사 또는 동일 제조사의 상이한 버전의 LLM으로 구현 가능하고, 각 모듈에 배정되는 LLM의 수량은 1개 이상으로 동적으로 조정 가능하며, 적용 도메인은 법률, 의료, 특허, 금융, 행정 심판을 포함하는 대립 논증과 판정이 필요한 모든 분야인 것을 특징으로 하는, AI 기반 분쟁·심판 자동화 시스템.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer class="gov-footer">
+  <p><strong>특허청 제출용 문서 — 출원번호 제10-2026-0039504호</strong></p>
+  <p>본 문서는 특허출원 목적의 공식 기술 문서입니다. 무단 복제·배포를 금합니다.</p>
+  <p>© 2026 발명자. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

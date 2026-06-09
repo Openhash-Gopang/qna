@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "docs": [
     {
       "file": "docs/strategy/Gopang_확산전략_사업화계획.md",
@@ -35,6 +35,528 @@
       "file": "docs/subsystems/가상판결_출력형식_v13_2.md",
       "title": "K-Law 가상판결 출력형식 v13.2",
       "cat": "subsystems"
+    },
+    {
+      "file": "docs/research/K-OpenLaw_paper.html",
+      "title": "K-OpenLaw 연구논문 v3.5 — 이종 LLM 기반 자율 분쟁 해결 시스템 실증 연구",
+      "cat": "research",
+      "desc": "임대차보증금 반환 분쟁 1심·2심에 K-OpenLaw 적용. 법원 판결(41점·35점) vs AI 생성 판결(92점). 분석 완료 시간 45.8분."
+    },
+    {
+      "file": "docs/research/different_llm_legal_perfection_v3_0.html",
+      "title": "이종 LLM 기반 법리 완전성 검증 논문 v3.0 (HTML)",
+      "cat": "research",
+      "desc": "판결문 법리 오류 자동 식별 5단계 파이프라인 제안. OpenHash 증거 무결성 4.2ms. 법리 완전성 92점(A). 특허출원 제10-2026-0018910호 포함."
+    },
+    {
+      "file": "docs/research/different_llm_legal_perfection_v3_0.txt",
+      "title": "이종 LLM 기반 법리 완전성 검증 논문 v3.0 (TXT)",
+      "cat": "research",
+      "desc": "위 논문의 평문 텍스트 버전. 수정·갱신 용이 형식."
+    },
+    {
+      "file": "docs/research/이종_LLM_기반_법리_완전성_검증.txt",
+      "title": "이종 LLM 기반 법리 완전성 검증 논문 v3.0 (한글 TXT)",
+      "cat": "research",
+      "desc": "위 논문과 동일 내용의 한글 파일명 버전."
+    },
+    {
+      "file": "docs/research/integrated_court_v2_0.html",
+      "title": "통합심(K-Law) 시스템 vs 법원 판결 비교 연구 v2.0 — 300건 분석",
+      "cat": "research",
+      "desc": "법원 판결문 300건(1심·2심·3심 각 100건)에 방법론 v7.1 적용. 법원 평균 66.5점 vs K-Law 82.4점(t=9.70, p<0.001). 오류 제거율 96.1%."
+    },
+    {
+      "file": "docs/patent/patent_A_v4.txt",
+      "title": "특허출원서 v4 — OpenHash 감사 가능한 계층적 분산원장 시스템 (PLSM·ILMV)",
+      "cat": "patent",
+      "desc": "출원번호 제10-2026-0018910호. 확률적 계층 선택(PLSM) + 양방향 상호 계층 검증(ILMV) + 긴급 PBFT + BIVM. L1~L5 5계층 구조. 선행발명 분할."
+    },
+    {
+      "file": "docs/patent/patent_A_v4__1_.txt",
+      "title": "특허출원서 v4 사본 — OpenHash 계층적 분산원장 시스템",
+      "cat": "patent",
+      "desc": "patent_A_v4.txt와 동일 내용의 사본 파일."
+    },
+    {
+      "file": "docs/patent/AI_secretary_patent.html",
+      "title": "특허출원서 — AI 비서 기반 분쟁 예방 및 분산형 자율 분쟁 해결 시스템",
+      "cat": "patent",
+      "desc": "선행발명 제10-2026-0039504호의 후속 발명. 예방 법학 2계층(101-P 3단계 경고) + 독립 주체 4분리(원고·피고·중재·판결 AI). 청구항 30개. 시뮬레이션: 위법 징후 감지 100%, 건당 처리비용 3.6원."
+    },
+    {
+      "file": "docs/patent/different_llm_patent.html",
+      "title": "특허출원서 제10-2026-0039504호 — 이종 LLM 기반 대립 논증·판정 자동화 시스템",
+      "cat": "patent",
+      "desc": "핵심 선행발명. 5모듈(제1·제2 대변자, 논쟁관리, 판정, 절차관리) + 6단계 규범 위계 + 논쟁종료 트리거 5종(반복·가치충돌·규범역전·인도적한계·증거부재) + APS·VHI·CRI 정량지표 + PDV+OpenHash 증거체계. 법원 연계형(제1모드)·ADR(제2모드)."
+    },
+    {
+      "file": "docs/patent/llm_dispute_resolution.html",
+      "title": "특허명세서 — 다중 독립 법률 AI 에이전트 기반 법적 분쟁 해결 시스템",
+      "cat": "patent",
+      "desc": "다수 독립 LLM 인스턴스 + 총괄 AI + 원고·피고 에이전트 그룹 + PDV+OpenHash 증거 무결성. 소프트웨어 계약금 분쟁 실시예(합의액 1,800만 원) 포함. 기존 대비 비용 90%↓, 처리 수년→수분."
+    },
+    {
+      "file": "docs/patent/오픈해시_특허_적응형계층구조시스템.txt",
+      "title": "특허명세서 — OpenHash 기반 적응형 계층 구조 시스템 및 그 운영 방법",
+      "cat": "patent",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/patent/입법관리_특허_해시체인_적응형_입법과정관리시스템.txt",
+      "title": "특허명세서 — 해시체인 기반 적응형 입법 과정 관리 시스템",
+      "cat": "patent",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/patent/화폐_특허_완본_민간경쟁형_디지털화폐_FPGA.txt",
+      "title": "특허출원서(완본) — 민간 경쟁형 디지털 화폐 발행 시스템 및 FPGA 기반 AI 재무제표 검증 방법",
+      "cat": "patent",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/patent/화폐_특허_v0_7_민간경쟁형_디지털화폐_FPGA_AI재무제표.txt",
+      "title": "특허출원서 v0.7 — 민간 경쟁형 디지털 화폐 발행 시스템 (FPGA+AI 재무제표)",
+      "cat": "patent",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/patent/고용_특허_능력적성매칭_국가총생산최대화.txt",
+      "title": "특허명세서 — 개인별 능력-적성 최적 매칭을 통한 국가 총생산 최대화 다중 Agent 시스템",
+      "cat": "patent",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/patent/농업_특허_IPv6_오픈해시_통합.txt",
+      "title": "특허출원서 — OpenHash 기반 IPv6 농업 데이터 통합 관리 시스템",
+      "cat": "patent",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/patent/교육_특허_AI에이전트_7단계_직업예측_맞춤교육.txt",
+      "title": "특허명세서 — AI 에이전트 기반 7단계 개인-사회 통합 최적화를 통한 미래 직업 예측 및 맞춤 교육 시스템",
+      "cat": "patent",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/patent/의료_특허_AI기반_5차원의료시스템.txt",
+      "title": "특허명세서 — AI 기반 5차원 의료 시스템",
+      "cat": "patent",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/patent/FPGA_세무_특허_해시체인_지능형_세무거래처리시스템.txt",
+      "title": "특허명세서 — FPGA 가속 해시체인 기반 지능형 세무거래 처리 시스템",
+      "cat": "patent",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/patent/Agent간상호작용_특허_전자소송_범용서비스자동화.txt",
+      "title": "특허출원서 — Personal Agent ↔ Institutional Agent 상호작용 기반 전자소송 및 범용 서비스 자동화 시스템",
+      "cat": "patent",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/patent/입법_특허_v1_해시체인_적응형입법과정관리.txt",
+      "title": "특허명세서 v1 — 해시체인 기반 적응형 입법 과정 관리 시스템 및 그 운영 방법",
+      "cat": "patent",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/patent/고용_특허_v2_능력적성매칭_국가총생산최대화.txt",
+      "title": "특허출원서 v2 — 개인별 능력-적성 최적 매칭을 통한 국가 총생산 최대화 다중 Agent 시스템",
+      "cat": "patent",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/patent/행정_특허_다중AIAgent_중앙지방협업행정구조.txt",
+      "title": "특허명세서 — 다중 AI Agent 기반 중앙-지방 협업형 행정 구조 혁신 시스템",
+      "cat": "patent",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/patent/화폐_특허_개선안_FPGA_AI_초고속저전력_통합디지털화폐.txt",
+      "title": "특허명세서(개선안) — FPGA 및 AI 기반 초고속·저전력 통합 디지털 화폐 및 자율 금융 서비스 시스템",
+      "cat": "patent",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/patent/급식_특허_대규모AI자율급식시스템_통합5부.txt",
+      "title": "특허출원서(5부 통합) — 대규모 AI 자율 급식 시스템 (5,000만 명 규모·계층적 연합학습·Nash 균형 시장 Agent)",
+      "cat": "patent",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/research/LLM_지적재산권_학술심사_사업화지원시스템_논문.txt",
+      "title": "연구논문/명세서 — LLM 활용 통합 지적재산권 심사 및 학술논문 심사·사업화 지원 시스템",
+      "cat": "research",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/research/논문_AIAgent생태계_산업별표준업무프로세스_OpenHash신뢰보장.txt",
+      "title": "논문 — AI Agent 생태계를 위한 산업별 표준 업무 프로세스 수립 및 진화 메커니즘: OpenHash 기반 신뢰 보장",
+      "cat": "research",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/research/논문_법제처_반복업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash와 AI Agent를 활용한 법제처 반복업무 자동화 방안 연구",
+      "cat": "research",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/research/논문_인사혁신처_반복업무자동화_OpenHash_DeepSeekR1.txt",
+      "title": "논문 — OpenHash와 AI Agent를 활용한 인사혁신처 반복업무 자동화 방안 연구",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_병무청_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 병무청 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_개인정보보호위원회_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 개인정보보호위원회 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/research/논문_공익사익균형_삼중AIAgent_전공별개인맞춤교육.txt",
+      "title": "논문 — 공익-사익 균형 기반 삼중 AI Agent를 활용한 전공별 개인 맞춤형 교육 시스템 개발",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_교육정책_해시체인가중투표_산업전문성통합_다중이해관계자.txt",
+      "title": "논문 — 교육정책 의사결정을 위한 해시체인 기반 가중투표 시스템: 고등교육에 산업 전문성을 통합한 다중 이해관계자 프레임워크",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_경찰청_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 경찰청 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/research/논문_공소청_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 공소청 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/research/논문_공정거래위원회_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 공정거래위원회 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/research/논문_과기정통부_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 과학기술정보통신부 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/research/논문_관세청_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 관세청 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-LOGISTICS"
+    },
+    {
+      "file": "docs/research/논문_교육부_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 교육부 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_국가데이터처_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 국가데이터처 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/research/논문_국민권익위원회_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 국민권익위원회 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_국방부_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 국방부 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/research/논문_국세청_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 국세청 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/research/논문_금융위원회_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 금융위원회 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/research/논문_기획재정부_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 기획재정부 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/research/논문_방위사업청_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 방위사업청 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/research/논문_법무부_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 법무부 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/research/논문_법제처_v2_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 v2 — OpenHash 기반 AI Agent를 활용한 법제처 업무 자동화 연구 (신규판)",
+      "cat": "research",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/research/논문_소방청_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 소방청 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/research/논문_식품의약품안전처_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 식품의약품안전처 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/research/논문_외교부_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 외교부 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_우주항공청_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 우주항공청 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/research/논문_원자력안전위원회_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 원자력안전위원회 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/research/논문_인사혁신처_v2_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 v2 — OpenHash 기반 AI Agent를 활용한 인사혁신처 업무 자동화 연구 (OpenHash Agent 아키텍처판)",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_조달청_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 조달청 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/research/논문_지식재산처_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 지식재산처 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/research/논문_행정안전부_업무자동화_OpenHash_AIAgent.txt",
+      "title": "논문 — OpenHash 기반 AI Agent를 활용한 행정안전부 업무 자동화 연구",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_국가데이터처_v2_업무자동화_OpenHash_AI에이전트_개정판.txt",
+      "title": "논문 개정판 — OpenHash 기반 AI 에이전트를 활용한 국가데이터처 업무 자동화 방안 연구 (이중 고객 모델)",
+      "cat": "research",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/research/논문_국민권익위원회_v2_업무자동화_OpenHash_AI에이전트.txt",
+      "title": "논문 v2 — OpenHash 기반 AI 에이전트를 활용한 국민권익위원회 업무 자동화 연구 (개정판)",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_개인정보금고_PDV_LLM관리자_구축연구.txt",
+      "title": "논문 — OpenHash 기반 개인정보금고(PDV)를 위한 대규모 언어모델(LLM) 관리자 구축 연구",
+      "cat": "research",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/research/논문_권역사법통합체계_예방적사법_OpenHash.txt",
+      "title": "논문 — OpenHash 기반 권역 사법 통합 체계 구축 연구 (예방적 사법 체계·글로벌 법제 조화)",
+      "cat": "research",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/research/논문_권역의료통합체계_대학병원중심_OpenHash.txt",
+      "title": "논문 — OpenHash 기반 권역 의료 통합 체계 구축 연구 (대학병원 중심·1인당 월 490원)",
+      "cat": "research",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/research/논문_중앙지방협업_행정구조혁신_OpenHash.txt",
+      "title": "논문 — OpenHash 기반 중앙-지방 협업형 행정 구조 혁신 연구 (5종 Agent 실시간 협업)",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_통합교육체제_유치원~대학원_OpenHash.txt",
+      "title": "논문 — OpenHash 기반 통합 교육 체제 구축 연구 (유치원~대학원·1인당 월 290원)",
+      "cat": "research",
+      "sp": "SP-CIVIC"
+    },
+    {
+      "file": "docs/research/논문_진화론적AIAgent_근로자평생교육_혁신기술설계.txt",
+      "title": "논문 — 진화론적 AI Agent 경쟁 시스템 기반 근로자 평생교육 플랫폼: 혁신 기술 중심 설계",
+      "cat": "research",
+      "sp": "SP-EDU"
+    },
+    {
+      "file": "docs/research/논문_진화론적AIAgent_차세대교육플랫폼_통합아키텍처_실행전략.txt",
+      "title": "논문 — 진화론적 AI Agent 경쟁 시스템 기반 차세대 교육 플랫폼: 통합 아키텍처 설계 및 실행 전략",
+      "cat": "research",
+      "sp": "SP-EDU"
+    },
+    {
+      "file": "docs/research/논문_AIAgent_웹사이트전환_자율상거래에이전트_DeepSeekR1.txt",
+      "title": "논문 — AI Agent 기반 웹사이트 전환 시스템: DeepSeek R1 Fine-tuning을 통한 자율 상거래 에이전트 구축",
+      "cat": "research",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/research/논문_OpenHash_IPv6_통합농업데이터관리시스템.txt",
+      "title": "논문 — OpenHash 기반 IPv6 통합 농업 데이터 관리 시스템: 증명 가능한 보안을 갖춘 탈중앙화 접근법",
+      "cat": "research",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/research/논문_공익사익균형_삼중AIAgent_맞춤교육_ODT완본.txt",
+      "title": "논문(ODT 완본) — 공익-사익 균형 기반 삼중 AI Agent를 활용한 전공별 개인 맞춤형 교육 시스템 개발",
+      "cat": "research",
+      "sp": "SP-EDU"
+    },
+    {
+      "file": "docs/research/논문_교육정책_해시체인가중투표_다중이해관계자_ODT완본.txt",
+      "title": "논문(ODT 완본) — 교육정책 의사결정을 위한 해시체인 기반 가중투표 시스템: 다중 이해관계자 프레임워크",
+      "cat": "research",
+      "sp": "SP-EDU"
+    },
+    {
+      "file": "docs/research/논문_맞춤형교육시스템_기술평가요약_특허가능성분석.txt",
+      "title": "논문/기술평가 — 전공별 개인 맞춤형 AI 교사 보조 시스템 기술 평가 요약 (특허 가능성·시장 분석)",
+      "cat": "research",
+      "sp": "SP-EDU"
+    },
+    {
+      "file": "docs/patent/교통_특허_다중AIAgent_경쟁시장메커니즘_자율주행교통관제.txt",
+      "title": "특허명세서 — AI 다중 에이전트 기반 경쟁적 시장 메커니즘 사회적 자율주행 교통 관제 시스템",
+      "cat": "patent",
+      "sp": "SP-LOGISTICS"
+    },
+    {
+      "file": "docs/patent/농업_특허_부록_IPv6_알고리즘_계산방법_상세설명.txt",
+      "title": "특허 부록 — IPv6 농업 시스템 알고리즘 및 계산 방법 상세 설명서",
+      "cat": "patent",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/patent/특허_요약_Personal_Institutional_Agent_서비스자동화.txt",
+      "title": "특허 요약 — Personal Agent & Institutional Agent 기반 서비스 자동화 시스템 (zk-SNARK 개인정보 보호)",
+      "cat": "patent",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/patent/특허_요약_7단계개인사회통합_맞춤교육진로_AI시스템.txt",
+      "title": "특허 요약 — AI 기반 7단계 개인-사회 통합 최적화 맞춤 교육 및 진로 제안 시스템",
+      "cat": "patent",
+      "sp": "SP-EDU"
+    },
+    {
+      "file": "docs/patent/특허_요약_FPGA해시체인_PBFT_지능형분산세무행정시스템.txt",
+      "title": "특허 요약 — FPGA 가속 해시체인+PBFT 기반 지능형 분산 세무행정 시스템 (300,129 TPS)",
+      "cat": "patent",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/patent/특허_요약_계층적연합학습_대규모AI자율급식_5000만명.txt",
+      "title": "특허 요약 — 계층적 연합학습 기반 대규모 AI 자율 급식 시스템 (5,000만 명)",
+      "cat": "patent",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/patent/특허_분석_FPGA_AI_민간경쟁형디지털화폐_발명자의도분석.txt",
+      "title": "특허 분석 — 민간 경쟁형 디지털 화폐 + FPGA AI 금융: 발명자 의도 및 목표 분석",
+      "cat": "patent",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/patent/특허_분석_다중AIAgent_경쟁시장_사회적자율주행교통관제_발명자의도.txt",
+      "title": "특허 분석 — AI 다중 에이전트 사회적 자율주행 교통 관제 시스템: 발명자 의도 및 목표 분석",
+      "cat": "patent",
+      "sp": "SP-LOGISTICS"
+    },
+    {
+      "file": "docs/patent/특허_요약_FPGA가속_자율시장통합플랫폼_7.3MTPS.txt",
+      "title": "특허 요약 — FPGA 가속 자율 시장 통합 플랫폼 (소비자 데이터 0% 수집·7.3M TPS)",
+      "cat": "patent",
+      "sp": "SP-ECONOMY"
+    },
+    {
+      "file": "docs/patent/특허_분석_OpenHash_에너지효율분산원장_발명자의도분석.txt",
+      "title": "특허 분석 — OpenHash 에너지 효율 분산원장: 발명자 의도 및 목표 분석 (PoW 대비 98.5%↓)",
+      "cat": "patent",
+      "sp": "SP-INFRA"
+    },
+    {
+      "file": "docs/patent/특허_분석_AI거버넌스_완전고용_국가총생산최대화_발명자의도.txt",
+      "title": "특허 분석 — AI 거버넌스 기반 완전고용 및 국가 총생산 최대화 시스템: 발명자 의도 분석",
+      "cat": "patent",
+      "sp": "SP-GOV"
+    },
+    {
+      "file": "docs/patent/특허_요약_AI기반5차원의료시스템_99%진단정확도.txt",
+      "title": "특허 요약 — AI 기반 5차원 의료 시스템 (99% 진단 정확도·8개 전문 AI 에이전트 협업)",
+      "cat": "patent",
+      "sp": "SP-SAFETY"
+    },
+    {
+      "file": "docs/patent/특허_분석_해시체인기반분산거버넌스_입법관리_발명자의도.txt",
+      "title": "특허 분석 — 해시체인 기반 분산 거버넌스 입법 관리 시스템: 발명자 의도 분석 (374.76 TPS)",
+      "cat": "patent",
+      "sp": "SP-GOV"
+    },
+    {
+      "file": "docs/patent/특허_요약_LLM통합지재권학술논문심사_사업화지원시스템.txt",
+      "title": "특허 요약 — LLM 활용 통합 지적재산권·학술논문 심사 및 사업화 지원 시스템",
+      "cat": "patent",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/patent/특허_요약_분산GPU_다중AIAgent_글로벌통합특허출원처리시스템.txt",
+      "title": "특허 요약 — 분산 GPU 클러스터 기반 다중 AI Agent 글로벌 통합 특허 출원 처리 시스템",
+      "cat": "patent",
+      "sp": "SP-LAW"
+    },
+    {
+      "file": "docs/patent/특허_명세서_다중AIAgent_중앙지방협업_행정구조혁신.txt",
+      "title": "특허 명세서 — 다중 AI Agent 기반 중앙-지방 협업형 행정 구조 혁신 시스템 및 방법",
+      "cat": "patent",
+      "sp": "SP-GOV"
     }
   ]
 }

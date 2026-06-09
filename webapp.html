@@ -4,392 +4,860 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gopang QnA"/>
+<meta name="theme-color" content="#ffffff">
 <title>Gopang QnA</title>
 <link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap">
+<script type="module" src="https://gopang.net/auth/subsystem-auth.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;height:100dvh;overflow:hidden;
-  font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:15px;
-  background:#f8fafc;color:#1c1c1e;-webkit-font-smoothing:antialiased}
+  font-family:'Pretendard',-apple-system,'Helvetica Neue',sans-serif;
+  font-size:15px;background:#fff;color:#111;-webkit-font-smoothing:antialiased}
 :root{
-  --green:#3ecf8e;--green-dk:#2a9d6f;--green-lt:#d1fae5;
-  --bg:#f8fafc;--surface:#fff;--sep:#e2e8f0;--txt2:#64748b;
-  --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px)
+  --green:#3ecf8e;--green-lt:#d1fae5;--green-dk:#059669;--green-bd:#6ee7b7;
+  --border:#e5e7eb;--txt2:#6b7280;--txt3:#9ca3af;
+  --chip-bg:#f9fafb;--chip-border:#e5e7eb;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
 }
-#app{display:flex;flex-direction:column;height:100%;height:100dvh}
 
-/* 상단 바 */
-.topbar{display:flex;align-items:center;
-  padding:calc(var(--safe-top) + 10px) 16px 10px;
-  background:var(--green);gap:10px;flex-shrink:0;min-height:52px}
-.back-btn{background:none;border:none;color:rgba(255,255,255,.85);
-  font-size:16px;cursor:pointer;padding:4px 0;
-  display:flex;align-items:center;gap:4px;flex-shrink:0;white-space:nowrap}
-.back-btn svg{width:10px;height:16px;stroke:rgba(255,255,255,.85);stroke-width:2.5;
-  fill:none;stroke-linecap:round;stroke-linejoin:round}
-.topbar-center{flex:1;text-align:center;overflow:hidden}
-.topbar-title{font-size:16px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topbar-sub{font-size:11px;color:rgba(255,255,255,.75);margin-top:1px}
-.auth-badge{background:rgba(255,255,255,.2);color:#fff;border-radius:10px;
-  padding:3px 8px;font-size:11px;font-weight:700;flex-shrink:0}
+/* ── 앱 레이아웃 ── */
+.app{display:flex;flex-direction:column;height:100%;height:100dvh;
+  max-width:480px;margin:0 auto;background:#fff;overflow:hidden}
 
-/* 채팅 바디 */
-#chat-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:12px 16px 8px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+/* ── 상단 바 ── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(var(--safe-t)+12px) 16px 12px;
+  border-bottom:1px solid var(--border);flex-shrink:0;background:#fff;
+}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-icon{width:28px;height:28px;background:var(--green);border-radius:7px;
+  display:flex;align-items:center;justify-content:center}
+.topbar-icon svg{width:14px;height:14px;stroke:#fff;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.topbar-name{font-size:15px;font-weight:800;color:#111;letter-spacing:-.3px}
+.topbar-right{display:flex;align-items:center;gap:6px}
+.auth-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;
+  background:var(--chip-bg);color:var(--txt2);border:1px solid var(--chip-border);display:none}
+.top-btn{
+  display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;
+  font-size:12px;font-weight:600;color:var(--txt2);background:none;border:none;
+  cursor:pointer;transition:background .12s,color .12s;
+}
+.top-btn:hover,.top-btn:active{background:var(--chip-bg);color:#111}
+.top-btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.top-btn.icon-only{padding:6px;border-radius:8px}
+.top-btn.icon-only svg{width:18px;height:18px}
 
-/* AI 버블 */
-.bubble-ai{display:flex;align-items:flex-end;gap:8px;max-width:88%;align-self:flex-start}
-.ai-avatar{width:28px;height:28px;border-radius:50%;
-  background:linear-gradient(135deg,#3ecf8e,#2a9d6f);
-  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.bubble-ai-inner{display:flex;flex-direction:column;gap:2px}
-.bubble-ai-text{background:var(--surface);border-radius:18px 18px 18px 4px;
-  padding:10px 14px;font-size:15px;line-height:1.6;color:#1c1c1e;
-  box-shadow:0 1px 4px rgba(62,207,142,.12);word-break:break-word}
-.bubble-ai-text b{font-weight:600;color:#0f172a}
-.bubble-ai-time{font-size:10px;color:var(--txt2);padding-left:4px}
+/* ── 설정 패널 ── */
+.settings-panel{
+  position:fixed;inset:0;z-index:999;display:flex;justify-content:flex-end;
+  visibility:hidden;
+}
+.settings-panel.open{visibility:visible}
+.settings-overlay{
+  flex:1;background:rgba(0,0,0,.3);
+  opacity:0;transition:opacity .25s;cursor:pointer;
+}
+.settings-panel.open .settings-overlay{opacity:1}
+.settings-drawer{
+  width:80%;max-width:300px;background:#fff;height:100%;
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .25s;
+  box-shadow:-4px 0 24px rgba(0,0,0,.12);
+}
+.settings-panel.open .settings-drawer{transform:translateX(0)}
+.settings-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(var(--safe-t)+14px) 16px 14px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.settings-head-title{font-size:15px;font-weight:800;color:#111}
+.settings-close{background:none;border:none;cursor:pointer;padding:4px;
+  display:flex;align-items:center;justify-content:center;border-radius:6px}
+.settings-close:hover{background:var(--chip-bg)}
+.settings-close svg{width:18px;height:18px;stroke:#6b7280;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.settings-body{flex:1;overflow-y:auto;padding:12px 0}
+.settings-section{padding:8px 16px 4px}
+.settings-section-title{font-size:11px;font-weight:700;color:var(--txt3);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.settings-item{
+  display:flex;align-items:center;gap:12px;padding:11px 16px;
+  cursor:pointer;transition:background .12s;border-radius:0;
+}
+.settings-item:hover{background:var(--chip-bg)}
+.settings-item svg{width:18px;height:18px;stroke:#374151;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.settings-item-label{font-size:14px;font-weight:500;color:#111}
+.settings-item-sub{font-size:12px;color:var(--txt2);margin-top:1px}
+.settings-sep{height:1px;background:var(--border);margin:4px 16px}
 
-/* 사용자 버블 */
-.bubble-user{display:flex;flex-direction:column;align-items:flex-end;max-width:88%;align-self:flex-end}
-.bubble-user-text{background:var(--green);border-radius:18px 18px 4px 18px;
-  padding:10px 14px;font-size:15px;line-height:1.6;color:#fff;word-break:break-word}
-.bubble-user-time{font-size:10px;color:var(--txt2);margin-top:2px;text-align:right}
+/* ── 도메인 탭 ── */
+.domain-tabs{
+  display:flex;gap:6px;padding:10px 16px 8px;overflow-x:auto;
+  scrollbar-width:none;flex-shrink:0;border-bottom:1px solid var(--border);background:#fff;
+}
+.domain-tabs::-webkit-scrollbar{display:none}
+.domain-tab{
+  display:inline-flex;align-items:center;gap:4px;padding:5px 12px;
+  border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;
+  border:1.5px solid var(--chip-border);background:#fff;
+  color:var(--txt2);cursor:pointer;transition:all .12s;flex-shrink:0;
+}
+.domain-tab:hover{border-color:var(--green);color:var(--green-dk)}
+.domain-tab.active{background:var(--green-lt);border-color:var(--green);color:var(--green-dk)}
+.domain-tab svg{width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
 
-/* 타이핑 */
-.typing{display:flex;align-items:flex-end;gap:8px;align-self:flex-start}
-.typing-dots{background:var(--surface);border-radius:18px;padding:12px 16px;display:flex;gap:5px;
-  box-shadow:0 1px 2px rgba(0,0,0,.06)}
-.typing-dots span{width:7px;height:7px;border-radius:50%;background:#6ee7b7;animation:typingDot 1.2s infinite}
-.typing-dots span:nth-child(2){animation-delay:.2s}
-.typing-dots span:nth-child(3){animation-delay:.4s}
-@keyframes typingDot{0%,60%,100%{transform:none;opacity:.5}30%{transform:translateY(-6px);opacity:1}}
+/* ── 채팅 화면 ── */
+.chat-screen{display:flex;flex-direction:column;flex:1;overflow:hidden}
 
-/* 카테고리 태그 */
-.cat-tag{display:inline-block;background:var(--green-lt);color:var(--green-dk);
-  border-radius:8px;padding:2px 8px;font-size:11px;font-weight:600;margin-bottom:6px}
+/* ── 채팅 바디 ── */
+.chat-body{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:0 16px 12px;display:flex;flex-direction:column;gap:10px;background:#fff;
+}
 
-/* 빠른 칩 */
-.quick-chips{display:flex;gap:8px;padding:6px 16px 8px;overflow-x:auto;
-  -webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0;background:var(--bg)}
-.quick-chips::-webkit-scrollbar{display:none}
-.chip{background:var(--surface);border:1px solid var(--sep);border-radius:16px;
-  padding:6px 14px;font-size:13px;color:var(--green-dk);white-space:nowrap;cursor:pointer;
-  flex-shrink:0;transition:background .12s}
-.chip:hover,.chip:active{background:var(--green-lt)}
+/* 인트로 */
+.intro-section{
+  display:flex;flex-direction:column;align-items:center;
+  padding:40px 0 28px;gap:16px;
+}
+.intro-icon{
+  width:68px;height:68px;border-radius:20px;background:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 28px rgba(22,163,74,.28);
+}
+.intro-icon svg{width:32px;height:32px;stroke:#fff;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.intro-title{font-size:20px;font-weight:800;color:#111;letter-spacing:-.4px;text-align:center}
+.intro-sub{font-size:14px;color:var(--txt2);line-height:1.65;text-align:center}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:0 8px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:20px;
+  background:#fff;border:1.5px solid var(--chip-border);
+  font-size:13px;font-weight:600;color:#374151;cursor:pointer;
+  transition:border-color .12s,background .12s,color .12s;white-space:nowrap;
+}
+.chip svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.chip:hover,.chip:active{background:var(--green-lt);border-color:var(--green);color:var(--green-dk)}
 
-/* 입력 영역 */
-.input-area{background:var(--surface);border-top:0.5px solid var(--sep);
-  padding:8px 12px calc(8px + var(--safe-bot));display:flex;align-items:flex-end;gap:8px;flex-shrink:0}
-.input-wrap{flex:1;background:var(--bg);border:1px solid var(--sep);border-radius:20px;
-  display:flex;align-items:flex-end;padding:6px 12px;transition:border-color .15s}
-.input-wrap:focus-within{border-color:var(--green)}
-#msg-input{flex:1;background:none;border:none;outline:none;font-family:inherit;
-  font-size:15px;color:#1c1c1e;resize:none;max-height:100px;line-height:1.4}
-#msg-input::placeholder{color:#c7c7cc}
-.send-btn{width:36px;height:36px;border-radius:50%;background:var(--green);border:none;
+/* 버블 */
+.b-ai{
+  max-width:88%;align-self:flex-start;
+  background:#f9fafb;border:1px solid var(--border);
+  border-radius:4px 16px 16px 16px;
+  padding:10px 14px;font-size:14px;line-height:1.75;color:#111;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.b-ai b{font-weight:700}
+.b-ai code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:13px}
+.b-user{
+  max-width:88%;align-self:flex-end;
+  background:var(--green);color:#fff;
+  border-radius:16px 16px 4px 16px;
+  padding:10px 14px;font-size:14px;line-height:1.75;
+}
+.b-time{font-size:10px;color:var(--txt3);margin-top:3px;padding:0 2px}
+.b-ai-wrap{display:flex;flex-direction:column;align-self:flex-start;max-width:88%}
+.b-user-wrap{display:flex;flex-direction:column;align-items:flex-end;max-width:88%;align-self:flex-end}
+
+/* ── 입력 영역 ── */
+.chat-input-area{
+  background:#fff;border-top:1px solid var(--border);
+  padding:10px 12px calc(10px + var(--safe-b));
+  display:flex;align-items:flex-end;flex-shrink:0;gap:6px;
+}
+.input-wrap{
+  flex:1;display:flex;align-items:flex-end;background:#f3f4f6;
+  border:1.5px solid transparent;border-radius:22px;
+  padding:8px 10px 8px 14px;
+  transition:border-color .15s,background .15s;min-width:0;
+}
+.input-wrap:focus-within{border-color:var(--green);background:#fff}
+.chat-textarea{
+  flex:1;background:transparent;border:none;
+  font-family:'Pretendard',sans-serif;font-size:14px;
+  resize:none;outline:none;max-height:120px;line-height:1.5;
+  color:#111;padding:2px 0;min-width:0;
+}
+.chat-textarea::placeholder{color:var(--txt3)}
+
+/* 입력 필드 옆 전송 버튼 (항상 표시) */
+.chat-send-btn{
+  width:34px;height:34px;border-radius:50%;background:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;border:none;cursor:pointer;transition:background .12s;align-self:flex-end;
+}
+.chat-send-btn:disabled{background:var(--green-bd);cursor:not-allowed}
+.chat-send-btn svg{width:14px;height:14px;stroke:#fff;stroke-width:2.2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+
+/* 보조 버튼 그룹 — 기본 표시, 입력 중 숨김 */
+.aux-btns{
+  display:flex;align-items:center;gap:2px;flex-shrink:0;align-self:flex-end;
+  transition:opacity .15s,width .15s;overflow:hidden;
+}
+.aux-btns.hidden{opacity:0;width:0;pointer-events:none}
+.aux-btn{
+  width:40px;height:40px;border-radius:50%;background:none;border:none;
   display:flex;align-items:center;justify-content:center;cursor:pointer;
-  flex-shrink:0;transition:background .15s}
-.send-btn:disabled{background:#c7c7cc;cursor:not-allowed}
-.send-btn svg{width:16px;height:16px;fill:#fff}
+  transition:background .12s;flex-shrink:0;
+}
+.aux-btn:hover,.aux-btn:active{background:var(--chip-bg)}
+.aux-btn svg{width:22px;height:22px;stroke:#d1d5db;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.aux-btn:hover svg,.aux-btn:active svg{stroke:#9ca3af}
+.aux-btn.mic-btn svg{stroke:#d1d5db;width:24px;height:24px;stroke-width:2}
+.aux-btn.mic-btn:hover svg{stroke:#9ca3af}
+.aux-btn.mic-btn.active svg{stroke:var(--green)}
 
-/* 마이크 버튼 */
-.mic-btn{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:1px solid var(--sep);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:background .15s}
-.mic-btn.active{background:#fee2e2;border-color:#fca5a5}
-.mic-btn svg{width:15px;height:15px;stroke:#64748b;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.mic-btn.active svg{stroke:#ef4444}
+/* ── 토스트 ── */
+.toast{
+  position:fixed;bottom:calc(80px + var(--safe-b));left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:#111;color:#fff;border-radius:10px;
+  padding:10px 18px;font-size:13px;font-weight:500;
+  z-index:9999;opacity:0;transition:all .25s;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* 로딩 */
-#auth-loading{position:fixed;inset:0;z-index:9999;background:var(--surface);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-.spinner{width:28px;height:28px;border:3px solid #d1fae5;border-top-color:var(--green);
-  border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* ── 대화 기록 모달 ── */
+.history-modal{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,.45);
+  display:flex;align-items:flex-end;justify-content:center;
+  visibility:hidden;opacity:0;transition:opacity .2s,visibility .2s;
+}
+.history-modal.open{visibility:visible;opacity:1}
+.history-sheet{
+  width:100%;max-width:480px;background:#fff;
+  border-radius:20px 20px 0 0;
+  max-height:75dvh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .25s;
+}
+.history-modal.open .history-sheet{transform:translateY(0)}
+.history-sheet-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.history-sheet-title{font-size:15px;font-weight:800;color:#111}
+.history-sheet-close{background:none;border:none;cursor:pointer;padding:4px;
+  border-radius:6px;display:flex;align-items:center;justify-content:center}
+.history-sheet-close:hover{background:var(--chip-bg)}
+.history-sheet-close svg{width:18px;height:18px;stroke:#6b7280;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.history-body{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.history-empty{text-align:center;color:var(--txt3);font-size:14px;padding:32px 0}
+.history-item{border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.6}
+.history-item.user{background:var(--green-lt);color:var(--green-dk);align-self:flex-end;max-width:88%;text-align:right}
+.history-item.ai{background:var(--chip-bg);color:#374151;align-self:flex-start;max-width:88%}
+.history-item-role{font-size:10px;font-weight:700;margin-bottom:3px;opacity:.7}
 </style>
 </head>
 <body>
-<div id="auth-loading">
-  <div class="spinner"></div>
-  <div style="font-size:14px;color:var(--txt2)">고팡 인증 확인 중…</div>
-</div>
+<div class="app">
 
-<div id="app" style="display:none">
   <!-- 상단 바 -->
   <div class="topbar">
-    <button class="back-btn" onclick="goBackToGopang()">
-      <svg viewBox="0 0 10 16"><polyline points="9 1 1 8 9 15"/></svg>고팡
-    </button>
-    <div class="topbar-center">
-      <div class="topbar-title">Gopang QnA</div>
-      <div class="topbar-sub" id="topbar-sub">AI 지식 도우미</div>
+    <div class="topbar-left">
+      <div class="topbar-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <span class="topbar-name">Gopang QnA</span>
     </div>
-    <div class="auth-badge" id="auth-badge">—</div>
+    <div class="topbar-right">
+      <span class="auth-badge" id="auth-badge">L0</span>
+      <button class="top-btn icon-only" onclick="openSettings()" title="설정">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
   </div>
 
-  <!-- 채팅 바디 -->
-  <div id="chat-body"></div>
-
-  <!-- 빠른 칩 -->
-  <div class="quick-chips" id="quick-chips">
-    <div class="chip" onclick="sendQuick('고팡이 뭔가요?')">고팡이란?</div>
-    <div class="chip" onclick="sendQuick('제주도 파일럿 계획을 알려주세요')">제주 파일럿</div>
-    <div class="chip" onclick="sendQuick('GDC는 무엇인가요?')">GDC</div>
-    <div class="chip" onclick="sendQuick('K-Law 판결 시뮬레이터 사용법이 궁금해요')">K-Law</div>
-    <div class="chip" onclick="sendQuick('태스크포스 구성은 어떻게 되나요?')">TF 구성</div>
+  <!-- 도메인 탭 -->
+  <div class="domain-tabs" id="domain-tabs">
+    <button class="domain-tab active" data-domain="auto" onclick="setDomain('auto',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      자동
+    </button>
+    <button class="domain-tab" data-domain="law" onclick="setDomain('law',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      법률·분쟁
+    </button>
+    <button class="domain-tab" data-domain="ip" onclick="setDomain('ip',this)">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      특허·지재권
+    </button>
+    <button class="domain-tab" data-domain="safety" onclick="setDomain('safety',this)">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      안전·의료
+    </button>
+    <button class="domain-tab" data-domain="economy" onclick="setDomain('economy',this)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      경제·금융
+    </button>
+    <button class="domain-tab" data-domain="infra" onclick="setDomain('infra',this)">
+      <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+      OpenHash·인프라
+    </button>
+    <button class="domain-tab" data-domain="gov" onclick="setDomain('gov',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      행정·민주주의
+    </button>
+    <button class="domain-tab" data-domain="edu" onclick="setDomain('edu',this)">
+      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      교육
+    </button>
+    <button class="domain-tab" data-domain="logistics" onclick="setDomain('logistics',this)">
+      <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      교통·물류
+    </button>
+    <button class="domain-tab" data-domain="biz" onclick="setDomain('biz',this)">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      사업·파일럿
+    </button>
   </div>
 
-  <!-- 입력 영역 -->
-  <div class="input-area">
-    <div class="input-wrap">
-      <textarea id="msg-input" rows="1" placeholder="고팡에 대해 무엇이든 물어보세요…"
-        oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea>
+  <!-- 채팅 화면 -->
+  <div class="chat-screen">
+    <div class="chat-body" id="mob-chat-body">
+
+      <!-- 인트로 -->
+      <div class="intro-section" id="intro-section">
+        <div class="intro-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="intro-title">Gopang QnA</div>
+          <div class="intro-sub" style="margin-top:6px">고팡 플랫폼 · 기술 · 특허 · 사업에 관해<br>무엇이든 물어보세요.</div>
+        </div>
+        <div class="chip-row">
+          <button class="chip" onclick="qs('고팡이 뭐야? 한 문장으로 설명해줘')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            고팡 개요
+          </button>
+          <button class="chip" onclick="qs('OpenHash 기술이 기존 블록체인과 다른 점은?')">
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            OpenHash
+          </button>
+          <button class="chip" onclick="qs('K-Law 판결 정확도가 얼마나 돼?')">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            K-Law
+          </button>
+          <button class="chip" onclick="qs('제주 AI 교육도시 프로젝트 설명해줘')">
+            <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            제주 파일럿
+          </button>
+          <button class="chip" onclick="qs('고팡 특허 몇 건이야? 핵심 특허는?')">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            특허 현황
+          </button>
+        </div>
+      </div>
+
     </div>
-    <button class="mic-btn" id="mic-btn" onclick="toggleMic()">
-      <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-    </button>
-    <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
-      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-    </button>
+
+    <!-- 입력 영역 -->
+    <div class="chat-input-area">
+      <!-- 보조 버튼 그룹 (기본 표시, 입력 중 숨김) -->
+      <div class="aux-btns" id="aux-btns">
+        <button class="aux-btn mic-btn" id="mob-mic-btn" onclick="toggleMic()" title="음성 입력">
+          <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        </button>
+        <button class="aux-btn" onclick="document.getElementById('file-input').click()" title="파일 첨부">
+          <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </button>
+        <button class="aux-btn" onclick="openCamera()" title="카메라">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+      </div>
+
+      <!-- 입력 필드 -->
+      <div class="input-wrap">
+        <textarea class="chat-textarea" id="mob-input" rows="1"
+          placeholder="고팡·OpenHash·특허·사업에 대해 질문하세요…"
+          oninput="onInputChange(this)"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();mobSend()}"></textarea>
+      </div>
+
+      <!-- 전송 버튼 (항상 표시) -->
+      <button class="chat-send-btn" id="mob-send-btn" onclick="mobSend()" disabled title="전송">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+
+      <input type="file" id="file-input" accept="*/*" style="display:none" onchange="handleFile(this)">
+    </div>
+  </div>
+
+</div>
+<!-- 설정 패널 -->
+<div class="settings-panel" id="settings-panel">
+  <div class="settings-overlay" onclick="closeSettings()"></div>
+  <div class="settings-drawer">
+    <div class="settings-head">
+      <span class="settings-head-title">설정</span>
+      <button class="settings-close" onclick="closeSettings()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="settings-body">
+
+      <!-- 계정 -->
+      <div class="settings-section">
+        <div class="settings-section-title">계정</div>
+        <div class="settings-item">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <div>
+            <div class="settings-item-label" id="settings-user-name">인증 대기 중</div>
+            <div class="settings-item-sub" id="settings-user-level">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-sep"></div>
+
+      <!-- 지식베이스 -->
+      <div class="settings-section">
+        <div class="settings-section-title">지식베이스</div>
+        <div class="settings-item" onclick="qs('수록된 문서 목록 알려줘');closeSettings()">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <div>
+            <div class="settings-item-label">문서 목록 (108건)</div>
+            <div class="settings-item-sub">research·patent·valuation·pilot 등</div>
+          </div>
+        </div>
+        <div class="settings-item" onclick="qs('고팡 14개 서브시스템 전부 설명해줘');closeSettings()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <div>
+            <div class="settings-item-label">14개 서브시스템</div>
+            <div class="settings-item-sub">K-Law·K-Health·GDC 등</div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-sep"></div>
+
+      <!-- 대화 -->
+      <div class="settings-section">
+        <div class="settings-section-title">대화</div>
+        <div class="settings-item" onclick="showHistory()">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div>
+            <div class="settings-item-label">대화 기록</div>
+            <div class="settings-item-sub">현재 세션의 대화 내역</div>
+          </div>
+        </div>
+        <div class="settings-item" onclick="clearChat();closeSettings()">
+          <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
+          <div>
+            <div class="settings-item-label">대화 초기화</div>
+            <div class="settings-item-sub">현재 채팅 기록 삭제</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-sep"></div>
+
+      <!-- PC 화면 -->
+      <div class="settings-section">
+        <div class="settings-section-title">기타</div>
+        <div class="settings-item" onclick="window.open('desktop.html','_blank')">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <div>
+            <div class="settings-item-label">PC 화면 보기</div>
+            <div class="settings-item-sub">데스크탑 전체 기능 화면 열기</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 
-<script src="js/config.js"></script>
+<!-- 대화 기록 모달 -->
+<div class="history-modal" id="history-modal" onclick="if(event.target===this)closeHistory()">
+  <div class="history-sheet">
+    <div class="history-sheet-head">
+      <span class="history-sheet-title">대화 기록</span>
+      <button class="history-sheet-close" onclick="closeHistory()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="history-body" id="history-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="mob-toast"></div>
+
 <script>
-// ── 상태 ──────────────────────────────────────────
-let gopangUser = null;
-let chatHistory = [];
-let isTyping = false;
-let docsLoaded = [];
+// ── CFG (원본 구조 유지) ───────────────────────────────────────
+const CFG = {
+  proxyBase:  'https://gopang-proxy.tensor-city.workers.dev',
+  model:      'deepseek-chat',
+  maxHistory: 24,
+  spBase:     'https://raw.githubusercontent.com/Openhash-Gopang/qna/main/prompts/',
+  spCache:    {},
+  systemPromptFallback:
+    '당신은 Gopang(고팡) AI 지식 도우미입니다. ' +
+    'AI City Inc. / 팀 주피터가 운영하는 AI 시민 서비스 플랫폼에 관해 ' +
+    '정확하고 친절하게 한국어로 답변하세요.',
+};
 
-// ── updateSendBtn — 단일 진실의 원천 ──────────────
-function updateSendBtn() {
-  const inp = document.getElementById('msg-input');
-  const btn = document.getElementById('send-btn');
-  if (btn) btn.disabled = !inp.value.trim();
+// ── 도메인 탭 상태 ────────────────────────────────────────────
+let currentDomain = 'auto';
+function setDomain(domain, btn) {
+  currentDomain = domain;
+  document.querySelectorAll('.domain-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
 }
 
-// ── 인증 ──────────────────────────────────────────
-window.addEventListener('message', e => {
-  if (e.data?.type === 'GOPANG_AUTH') initApp(e.data.user);
-});
-window.addEventListener('load', () => {
-  const p = new URLSearchParams(location.search);
-  const ctx = p.get('ctx');
-  if (ctx) {
-    try { initApp(JSON.parse(atob(ctx))); return; } catch(e) {}
-  }
-  if (window.parent !== window) {
-    window.parent.postMessage({type:'GOPANG_AUTH_REQUEST', svc:'qna'}, '*');
-  }
-  setTimeout(() => {
-    if (!gopangUser) initApp({name:'게스트', guid:'guest', plan:'free'});
-  }, 2000);
-});
+// ── 2-Layer SP ────────────────────────────────────────────────
+const DOMAIN_SP = {
+  law:       'SP-LEGAL.txt',
+  ip:        'SP-IP.txt',
+  safety:    'SP-SAFETY.txt',
+  economy:   'SP-ECONOMY.txt',
+  infra:     'SP-INFRA.txt',
+  gov:       'SP-GOV.txt',
+  edu:       'SP-EDU.txt',
+  logistics: 'SP-LOGISTICS.txt',
+  biz:       'SP-BIZ.txt',
+};
 
-function initApp(user) {
-  gopangUser = user;
-  document.getElementById('auth-loading').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('auth-badge').textContent = user.name || '게스트';
-  // ★ input 이벤트는 oninput="updateSendBtn()" 어트리뷰트로 처리 — 이중 등록 제거
-  loadDocIndex().then(() => {
-    addAiMessage(`안녕하세요, **${user.name || '게스트'}**님! 👋\n\nGopang 시스템에 대한 질문에 답해드립니다.\n현재 **${docsLoaded.length}개** 문서가 로드되어 있습니다. 무엇이든 물어보세요!`);
-  });
+function _selectDomainSP(q) {
+  if (/K-Law|판결|법원|소송|분쟁|K-OpenLaw|법무부|법제처|공소청|사법|판사|변호사|소장|고소|피고|원고/.test(q)) return 'SP-LEGAL.txt';
+  if (/특허|지식재산|지재권|지식재산처|K-IP|출원|특허청|KIPO|USPTO|EPO|상표|디자인등록|발명/.test(q))        return 'SP-IP.txt';
+  if (/안전|응급|119|K-119|경찰|K-Health|의료|급식|국방|소방청|식약처|원자력/.test(q))                       return 'SP-SAFETY.txt';
+  if (/GDC|K-Tax|K-Market|K-Stock|금융|화폐|FPGA|재무제표|국세청|금융위|기재부|조달/.test(q))               return 'SP-ECONOMY.txt';
+  if (/OpenHash|PDV|SSO|K-Security|해시|분산원장|농업|IPv6|UAP|우주항공/.test(q))                            return 'SP-INFRA.txt';
+  if (/K-School|교육부|직업예측|통합교육|평생교육|진화론적/.test(q))                                         return 'SP-EDU.txt';
+  if (/K-Public|민주|K-Democracy|행정|입법|행안부|외교부|권익위/.test(q))                                    return 'SP-GOV.txt';
+  if (/교통|K-Traffic|K-Logistics|관세청|통관|자율주행|Nash균형/.test(q))                                   return 'SP-LOGISTICS.txt';
+  if (/제주|한림|파일럿|TF|태스크포스|확산|사업화|수익|부록|가치평가/.test(q))                              return 'SP-BIZ.txt';
+  return null;
 }
 
-function goBackToGopang() {
-  if (window.parent !== window) window.parent.postMessage({type:'GWP_BACK'}, '*');
-  else location.href = KQNA_CONFIG.gopangUrl;
-}
-
-// ── 문서 인덱스 로드 ───────────────────────────────
-async function loadDocIndex() {
+async function _fetchSP(filename) {
+  if (CFG.spCache[filename]) return CFG.spCache[filename];
   try {
-    const r = await fetch('docs/index.json');
-    const data = await r.json();
-    docsLoaded = data.docs || [];
-  } catch(e) { docsLoaded = []; }
+    const r = await fetch(CFG.spBase + filename + '?t=' + Date.now());
+    if (r.ok) {
+      const raw = await r.text();
+      CFG.spCache[filename] = raw.split('\n')
+        .filter(l => !l.trimStart().startsWith('#') && l.trim())
+        .join('\n');
+      return CFG.spCache[filename];
+    }
+  } catch(e) { console.warn('[SP] 로드 실패:', filename, e.message); }
+  return null;
 }
 
-// ── 메시지 전송 ────────────────────────────────────
-async function sendMessage() {
-  const input = document.getElementById('msg-input');
-  const text = input.value.trim();
-  if (!text || isTyping) return;
-  input.value = '';
-  input.style.height = '';
-  updateSendBtn();
-
-  addUserMessage(text);
-  chatHistory.push({role:'user', content: text});
-
-  showTyping();
-  const reply = await callAI(text);
-  hideTyping();
-
-  addAiMessage(reply);
-  chatHistory.push({role:'assistant', content: reply});
-  _recordPdv(text, reply);
+async function buildSystemPrompt(question) {
+  const core = await _fetchSP('SP-CORE.txt');
+  if (!core) return CFG.systemPromptFallback;
+  const domainFile = currentDomain !== 'auto'
+    ? (DOMAIN_SP[currentDomain] || null)
+    : _selectDomainSP(question);
+  if (!domainFile) return core;
+  const domain = await _fetchSP(domainFile);
+  return domain ? core + '\n\n---\n\n' + domain : core;
 }
 
-function sendQuick(text) {
-  document.getElementById('msg-input').value = text;
-  updateSendBtn();
-  sendMessage();
-}
-
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
-
-function autoResize(el) {
-  el.style.height = '';
-  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
-}
-
-// ── AI 호출 ───────────────────────────────────────
-async function callAI(question) {
-  const systemPrompt = buildSystemPrompt();
+// ── AI 호출 — Proxy(DeepSeek) + Claude 폴백 ───────────────────
+async function callAI(messages, question) {
+  const sp = await buildSystemPrompt(question || '');
   try {
-    const res = await fetch(KQNA_CONFIG.proxyUrl, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        service: KQNA_CONFIG.svc,
-        model:   KQNA_CONFIG.model,
-        max_tokens: KQNA_CONFIG.maxTokens,
-        temperature: KQNA_CONFIG.temperature,
-        system:  systemPrompt,
-        messages: chatHistory.slice(-10),
-        guid: gopangUser?.guid || 'guest',
-      })
-    });
-    const data = await res.json();
-    return data.content?.[0]?.text || data.choices?.[0]?.message?.content || '응답을 가져오지 못했습니다.';
-  } catch(e) {
-    return '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
-  }
-}
-
-function buildSystemPrompt() {
-  const docList = docsLoaded.map(d => `- [${d.cat}] ${d.title}`).join('\n');
-  return `당신은 Gopang(고팡) 시스템 전문 AI 도우미입니다. AI City Inc. / 팀 주피터가 운영하는 14개 서브시스템 기반 AI 시민 서비스 플랫폼에 대한 질문에 정확하고 친절하게 답합니다.
-
-## 현재 로드된 지식 문서 (${docsLoaded.length}건)
-${docList}
-
-## 답변 원칙
-1. 문서에 기반한 사실만 답변하고, 추측은 명확히 구분
-2. 한국어로 답변, 전문 용어는 풀어서 설명
-3. 서브시스템(K-Law, K-119, K-Health 등) 관련 질문은 해당 문서 참조
-4. GDC, PDV, SSO 등 기술 개념은 쉽게 설명
-5. 답변은 간결하게 (모바일 기준 500자 이내 권장)
-6. 모르는 내용은 솔직히 "해당 문서가 아직 없습니다"라고 안내
-
-## 플랫폼 핵심 정보
-- Gopang = AI 평행 세계 플랫폼, 14개 서브시스템
-- GDC(고팡디지털커런시): ₮1 = KRW 1,000 (제주 파일럿 기준)
-- PDV(개인데이터금고): OpenHash 분산원장 기반 개인정보 보관
-- 배포: GitHub Pages + Cloudflare Workers + Supabase
-- DAWN: Democracy is All We Need (핵심 철학)`;
-}
-
-// ── PDV 표준 payload { user_guid, source, report: { pdv_6w } }
-const PROXY = 'https://gopang-proxy.tensor-city.workers.dev';
-function _recordPdv(userMsg, aiReply) {
-  try {
-    const user_guid = gopangUser?.guid || 'anonymous';
-    const payload = {
-      user_guid,
-      source: 'kqna',
-      report: {
-        pdv_6w: {
-          who:   user_guid,
-          when:  new Date().toISOString(),
-          where: location.href,
-          what:  'Gopang QnA AI 채팅',
-          how:   `질문: ${userMsg.slice(0, 60)}`,
-          why:   'Gopang 시스템 지식 문의',
-        },
-      },
-    };
-    fetch(`${PROXY}/pdv_log`, {
+    const r = await fetch(`${CFG.proxyBase}/ai/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }).catch(() => {});
-  } catch(e) { console.warn('[PDV]', e.message); }
+      body: JSON.stringify({
+        provider: 'deepseek',
+        model:    CFG.model,
+        system:   sp,
+        messages: messages.slice(-CFG.maxHistory),
+        max_tokens: 2000,
+      }),
+    });
+    if (!r.ok) throw new Error(`proxy ${r.status}`);
+    const d = await r.json();
+    return d.content || '잠시 후 다시 시도해 주세요.';
+  } catch(e) {
+    console.warn('[QnA] DeepSeek 폴백 → Claude:', e.message);
+    const r2 = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: sp,
+        messages: messages.slice(-8),
+      }),
+    });
+    const d2 = await r2.json();
+    return d2.content?.find(c => c.type === 'text')?.text || '오류가 발생했습니다.';
+  }
 }
 
-// ── UI 헬퍼 ───────────────────────────────────────
-function addAiMessage(text) {
-  const body = document.getElementById('chat-body');
-  const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
-  const html = markdownLite(text);
-  const el = document.createElement('div');
-  el.className = 'bubble-ai';
-  el.innerHTML = `
-    <div class="ai-avatar">🤖</div>
-    <div class="bubble-ai-inner">
-      <div class="bubble-ai-text">${html}</div>
-      <div class="bubble-ai-time">${now}</div>
-    </div>`;
-  body.appendChild(el);
-  body.scrollTop = body.scrollHeight;
+// ── UI 헬퍼 ───────────────────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function updateSendBtn() {
+  const btn = document.getElementById('mob-send-btn');
+  if (btn) btn.disabled = !document.getElementById('mob-input').value.trim();
 }
 
-function addUserMessage(text) {
-  const body = document.getElementById('chat-body');
-  const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
-  const el = document.createElement('div');
-  el.className = 'bubble-user';
-  el.innerHTML = `
-    <div class="bubble-user-text">${escHtml(text)}</div>
-    <div class="bubble-user-time">${now}</div>`;
-  body.appendChild(el);
-  body.scrollTop = body.scrollHeight;
+// 입력 시작 → 보조 버튼 숨김 + 인트로 숨김 / 입력 없음 → 복원
+function onInputChange(el) {
+  autoResize(el);
+  updateSendBtn();
+  const typing = el.value.length > 0;
+  // 보조 버튼
+  const aux = document.getElementById('aux-btns');
+  if (aux) aux.classList.toggle('hidden', typing);
+  // 인트로 — 입력 시작 즉시 숨김, 입력 전부 지우면 복원
+  const intro = document.getElementById('intro-section');
+  if (intro) intro.style.display = typing ? 'none' : 'flex';
 }
-
-let typingEl = null;
-function showTyping() {
-  isTyping = true;
-  const body = document.getElementById('chat-body');
-  typingEl = document.createElement('div');
-  typingEl.className = 'typing';
-  typingEl.innerHTML = `<div class="ai-avatar">🤖</div><div class="typing-dots"><span></span><span></span><span></span></div>`;
-  body.appendChild(typingEl);
-  body.scrollTop = body.scrollHeight;
+function timeStr() {
+  return new Date().toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' });
 }
-function hideTyping() {
-  isTyping = false;
-  typingEl?.remove();
-  typingEl = null;
-}
-
 function markdownLite(t) {
   return t
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
-    .replace(/`(.+?)`/g,'<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px">$1</code>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
     .replace(/\n/g,'<br>');
 }
-function escHtml(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+// ── 채팅 ──────────────────────────────────────────────────────
+let hist = [];
+let mc   = 0;
+
+function hideIntro() {
+  const el = document.getElementById('intro-section');
+  if (el) el.style.display = 'none';
 }
 
-// ── 마이크 — v3.6 패턴 ───────────────────────────
-let micActive = false;
-let recognition = null;
+async function mobSend() {
+  const inp = document.getElementById('mob-input');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  const question = msg;
+  inp.value = '';
+  autoResize(inp);
+  updateSendBtn();
+  // 보조 버튼 복원
+  const aux = document.getElementById('aux-btns');
+  if (aux) aux.classList.remove('hidden');
+  hideIntro();
+
+  appendMsg('user', msg);
+  hist.push({ role:'user', content:msg });
+
+  const btn = document.getElementById('mob-send-btn');
+  btn.disabled = true;
+  const tid = appendMsg('ai', '…');
+
+  try {
+    const txt = await callAI(hist, question);
+    document.getElementById(tid)?.remove();
+    appendMsg('ai', txt);
+    hist.push({ role:'assistant', content:txt });
+    _recordPdv(msg);
+  } catch {
+    document.getElementById(tid)?.remove();
+    appendMsg('ai', '오류가 발생했습니다. 다시 시도해 주세요.');
+  }
+  btn.disabled = false;
+}
+
+// 파일 첨부 처리
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const name = file.name;
+  input.value = '';
+  hideIntro();
+  appendMsg('user', `📎 ${name}`);
+  hist.push({ role:'user', content:`[첨부 파일: ${name}]` });
+  setTimeout(async () => {
+    const btn = document.getElementById('mob-send-btn');
+    btn.disabled = true;
+    const tid = appendMsg('ai', '…');
+    const txt = await callAI(hist).catch(() => '파일 처리 중 오류가 발생했습니다.');
+    document.getElementById(tid)?.remove();
+    appendMsg('ai', txt);
+    hist.push({ role:'assistant', content:txt });
+    btn.disabled = false;
+  }, 200);
+}
+
+// 카메라
+function openCamera() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment';
+  input.onchange = () => handleFile(input);
+  input.click();
+}
+
+function appendMsg(role, text) {
+  const id   = 'mb' + (mc++);
+  const body = document.getElementById('mob-chat-body');
+  const wrap = document.createElement('div');
+  wrap.id = id;
+
+  if (role === 'user') {
+    wrap.className = 'b-user-wrap';
+    wrap.innerHTML = `
+      <div class="b-user">${text.replace(/\n/g,'<br>')}</div>
+      <div class="b-time">${timeStr()}</div>`;
+  } else {
+    wrap.className = 'b-ai-wrap';
+    wrap.innerHTML = `
+      <div class="b-ai">${markdownLite(text)}</div>
+      <div class="b-time">${timeStr()}</div>`;
+  }
+  body.appendChild(wrap);
+  body.scrollTop = body.scrollHeight;
+  return id;
+}
+
+function qs(s) {
+  document.getElementById('mob-input').value = s;
+  updateSendBtn();
+  mobSend();
+}
+
+function clearChat() {
+  // 1. 대화 기록 초기화
+  hist = [];
+  // 2. 채팅 버블 삭제
+  document.getElementById('mob-chat-body').innerHTML = '';
+  // 3. 인트로 섹션 복원
+  const intro = document.getElementById('intro-section');
+  if (intro) {
+    intro.style.display = 'flex';
+  } else {
+    // intro가 버블에 밀려 제거됐을 경우 reload 폴백
+    location.reload();
+    return;
+  }
+  // 4. 입력 필드 초기화
+  const inp = document.getElementById('mob-input');
+  if (inp) { inp.value = ''; autoResize(inp); updateSendBtn(); }
+  // 5. 보조 버튼 복원
+  document.getElementById('aux-btns')?.classList.remove('hidden');
+}
+
+function showHistory() {
+  closeSettings();
+  const body = document.getElementById('history-body');
+  body.innerHTML = '';
+  if (!hist.length) {
+    body.innerHTML = '<div class="history-empty">대화 기록이 없습니다.</div>';
+  } else {
+    hist.forEach(m => {
+      const el = document.createElement('div');
+      el.className = `history-item ${m.role === 'user' ? 'user' : 'ai'}`;
+      el.innerHTML = `<div class="history-item-role">${m.role === 'user' ? '나' : 'AI'}</div>${escHtml(m.content).replace(/\n/g,'<br>')}`;
+      body.appendChild(el);
+    });
+    // 최신 메시지로 스크롤
+    setTimeout(() => { body.scrollTop = body.scrollHeight; }, 50);
+  }
+  document.getElementById('history-modal').classList.add('open');
+}
+function closeHistory() {
+  document.getElementById('history-modal').classList.remove('open');
+}
+
+function openSettings() {
+  document.getElementById('settings-panel').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settings-panel').classList.remove('open');
+}
+
+function toast(msg) {
+  const t = document.getElementById('mob-toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── PDV 표준 payload { user_guid, source, report: { pdv_6w } }
+function _recordPdv(userMsg) {
+  try {
+    const token    = JSON.parse(sessionStorage.getItem('gopang_sso_token') || '{}');
+    const user_guid = token.ipv6 || 'anonymous';
+    fetch(`${CFG.proxyBase}/pdv_log`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_guid,
+        source: 'qna',
+        report: {
+          pdv_6w: {
+            who:   user_guid,
+            when:  new Date().toISOString(),
+            where: 'https://qna.gopang.net/webapp.html',
+            what:  'Gopang QnA AI 질문',
+            how:   `질문: ${(userMsg||'').slice(0, 60)}`,
+            why:   '고팡 플랫폼 정보 탐색',
+          },
+        },
+      }),
+    }).catch(() => {});
+  } catch(e) { console.warn('[PDV]', e.message); }
+}
+
+// ── ctx 파라미터 — ctx_enc=b64 분기 (§6-4) ───────────────────
+(function initCtx() {
+  const params  = new URLSearchParams(location.search);
+  const ctxRaw  = params.get('ctx') || '';
+  const ctxEnc  = params.get('ctx_enc');
+  const ctx = ctxRaw
+    ? (ctxEnc === 'b64'
+        ? decodeURIComponent(escape(atob(ctxRaw)))
+        : decodeURIComponent(ctxRaw))
+    : null;
+  if (ctx) setTimeout(() => qs(ctx), 300);
+})();
+
+// ── 마이크 — v3.6 패턴 ───────────────────────────────────────
+// 체크리스트 §3-7:
+// 1. getUserMedia() 선행 호출 없음 ✅
+// 2. onresult → autoResize() 직접 호출 ✅
+// 3. onresult → updateSendBtn() 직접 호출 ✅
+// 4. dispatchEvent 미사용 ✅
+// 5. input.focus() 미사용 ✅
+// 6. recognition.lang = 'ko-KR' ✅
+// 7. onerror 핸들러 ✅
+// 8. onend 핸들러 ✅
+// 9. iOS MediaRecorder 폴백 ✅
+let micActive    = false;
+let recognition  = null;
 let mediaRecorder = null;
-let audioChunks = [];
+let audioChunks  = [];
 
 function _micSetUI(active) {
   micActive = active;
-  const btn = document.getElementById('mic-btn');
-  if (btn) btn.classList.toggle('active', active);
+  const btn = document.getElementById('mob-mic-btn');
+  if (!btn) return;
+  btn.classList.toggle('active', active);
+  btn.style.background = active ? '#dcfce7' : '';
 }
 
 function _micStartWebSpeech(SR) {
+  // ★ getUserMedia() 호출 없음 — SpeechRecognition이 마이크 권한 자체 처리
   recognition = new SR();
   recognition.lang           = 'ko-KR';
   recognition.continuous     = false;
@@ -397,20 +865,22 @@ function _micStartWebSpeech(SR) {
   recognition.maxAlternatives = 1;
 
   recognition.onresult = (e) => {
-    const t = e.results[0][0].transcript;
-    const input = document.getElementById('msg-input');
+    const t     = e.results[0][0].transcript;
+    const input = document.getElementById('mob-input');
     if (input && t) {
       input.value = t;
-      autoResize(input);   // ★ 직접 호출
+      autoResize(input);   // ★ 직접 호출 (dispatchEvent 절대 사용 금지)
       updateSendBtn();     // ★ 직접 호출
+      // aux-btns는 마이크 음성 입력이므로 숨김 처리하지 않음
     }
     _micSetUI(false);
-    setTimeout(sendMessage, 100);
+    setTimeout(mobSend, 100);
   };
 
   recognition.onerror = (e) => {
     _micSetUI(false);
     console.warn('[Mic] 오류:', e.error);
+    if (e.error !== 'aborted') toast('🎤 음성 인식 오류: ' + e.error);
   };
 
   recognition.onend = () => { _micSetUI(false); };
@@ -421,18 +891,20 @@ function _micStartWebSpeech(SR) {
 
 async function _micStartMediaRecorder() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    audioChunks = [];
+    const stream  = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks   = [];
     mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-    mediaRecorder.onstop = async () => {
+    mediaRecorder.onstop = () => {
       stream.getTracks().forEach(t => t.stop());
       _micSetUI(false);
+      toast('🎤 iOS에서는 텍스트로 입력해 주세요.');
     };
     mediaRecorder.start();
     _micSetUI(true);
-  } catch(e) {
+  } catch {
     _micSetUI(false);
+    toast('🎤 마이크 권한이 필요합니다.');
   }
 }
 
@@ -444,15 +916,31 @@ function toggleMic() {
     return;
   }
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!isIOS && SR) {
-    _micStartWebSpeech(SR);
-  } else if (isIOS && window.MediaRecorder) {
-    _micStartMediaRecorder();
-  } else {
-    console.warn('[Mic] 음성 인식 미지원 브라우저');
-  }
+  const SR    = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!isIOS && SR)                        _micStartWebSpeech(SR);
+  else if (isIOS && window.MediaRecorder)  _micStartMediaRecorder();
+  else toast('🎤 이 브라우저에서는 음성 인식을 지원하지 않습니다.');
 }
+</script>
+
+<script>
+/* ── 고팡 SSO 인증 콜백 ── */
+window._onGopangAuth = function(user) {
+  if (!user) return;
+  const badge = document.getElementById('auth-badge');
+  if (badge) {
+    badge.textContent   = 'Lv.' + (user.level || 0);
+    badge.style.display = 'inline-block';
+  }
+  // 설정 패널 계정 정보
+  const nameEl  = document.getElementById('settings-user-name');
+  const levelEl = document.getElementById('settings-user-level');
+  if (nameEl)  nameEl.textContent  = user.name  || user.ipv6?.slice(-8) || '인증 완료';
+  if (levelEl) levelEl.textContent = `Lv.${user.level || 0} · ${user.ipv6?.slice(-12) || ''}`;
+  try { sessionStorage.setItem('gopang_sso_token', JSON.stringify(user)); } catch(e) {}
+  _recordPdv(null);
+  console.log('[QnA] ✅ 인증 완료 —', user.level, (user.ipv6||'').slice(-8));
+};
 </script>
 </body>
 </html>

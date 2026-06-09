@@ -448,10 +448,34 @@ function clearChat() {
   addAiMessage('대화가 초기화되었습니다. 무엇이든 물어보세요!', '시스템');
 }
 
+// ── SP 캐시 & 도메인 선택 ──────────────────────────
+const _spCache = {};
+async function _loadSP(filename) {
+  if (_spCache[filename]) return _spCache[filename];
+  try { _spCache[filename] = await (await fetch(`prompts/${filename}`)).text(); }
+  catch(e) { _spCache[filename] = ''; }
+  return _spCache[filename];
+}
+function _selectDomainSP(q) {
+  if (/K-Law|klaw|판결|법원|소송|법리|특허|K-OpenLaw|분쟁|청구항|출원/.test(q)) return 'SP-LAW.txt';
+  if (/안전|응급|119|K-119|경찰|K-Police|K-Health|건강|의료|보험|K-Insurance/.test(q)) return 'SP-SAFETY.txt';
+  if (/GDC|디지털커런시|세금|K-Tax|시장|K-Market|주식|K-Stock|금융|환전|이자/.test(q)) return 'SP-ECONOMY.txt';
+  if (/교통|K-Traffic|택시|물류|K-Logistics|배송|운송/.test(q)) return 'SP-LOGISTICS.txt';
+  if (/민원|K-Public|학교|K-School|교육|민주|K-Democracy|DAWN|OFP|연합/.test(q)) return 'SP-CIVIC.txt';
+  if (/OpenHash|PDV|SSO|인프라|보안|K-Security|GWP|L1|L2|L3|L4|L5|해시|분산원장/.test(q)) return 'SP-INFRA.txt';
+  if (/제주|한림|파일럿|TF|태스크포스|확산|사업화|수익|채용/.test(q)) return 'SP-BIZ.txt';
+  return null;
+}
+
 // ── AI 호출 ───────────────────────────────────────
 async function callAI(question) {
-  const docCtx = selectedDoc ? `\n\n현재 선택된 문서: "${selectedDoc.title}" (${selectedDoc.file})` : '';
-  const systemPrompt = buildSystemPrompt(docCtx);
+  const domainFile = _selectDomainSP(question);
+  const docCtx = selectedDoc ? `\n\n현재 선택된 문서: "${selectedDoc.title}"` : '';
+  const [core, domain] = await Promise.all([
+    _loadSP('SP-CORE.txt'),
+    domainFile ? _loadSP(domainFile) : Promise.resolve('')
+  ]);
+  const systemPrompt = core + (domain ? '\n\n---\n\n' + domain : '') + docCtx;
   try {
     const res = await fetch(KQNA_CONFIG.proxyUrl, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -468,29 +492,6 @@ async function callAI(question) {
     const data = await res.json();
     return data.content?.[0]?.text || data.choices?.[0]?.message?.content || '응답을 가져오지 못했습니다.';
   } catch(e) { return '네트워크 오류. 잠시 후 다시 시도해 주세요.'; }
-}
-
-function buildSystemPrompt(extraCtx='') {
-  const docList = docsLoaded.map(d=>`- [${d.cat}] ${d.title} (${d.file})`).join('\n');
-  return `당신은 Gopang(고팡) 시스템 전문 AI 도우미입니다. AI City Inc. / 팀 주피터가 운영하는 AI 시민 서비스 플랫폼에 대한 질문에 정확하고 친절하게 답합니다.
-
-## 로드된 지식 문서 (${docsLoaded.length}건)
-${docList}${extraCtx}
-
-## 핵심 플랫폼 정보
-- Gopang = AI 평행 세계 플랫폼, 14개 서브시스템 (K-Law, K-119, K-Health, K-Police, K-Market, K-Traffic, K-Tax, GDC, K-School, K-Public, K-Stock, K-Democracy, K-Logistics, K-Insurance, K-Security)
-- GDC(고팡디지털커런시): ₮1 = KRW 1,000 (제주 파일럿 기준)
-- PDV(개인데이터금고): OpenHash 분산원장 기반
-- 인프라: Cloudflare Workers + Supabase + GitHub Pages
-- DAWN: Democracy is All We Need (핵심 철학)
-- 제주도 파일럿: 4단계 × 4주 = 4개월, DAU 2,000명 목표
-
-## 답변 원칙
-1. 문서에 기반한 사실 우선, 추측은 명확히 구분
-2. 한국어 답변, 전문 용어는 풀어서 설명
-3. 구조적이고 명확하게 (소제목, 목록 활용)
-4. 모르는 내용은 "해당 문서가 아직 없습니다"라고 솔직하게
-5. 답변 끝에 관련 문서 참조 제안 가능`;
 }
 
 // ── UI ────────────────────────────────────────────

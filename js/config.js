@@ -17,6 +17,8 @@ const KQNA_CONFIG = {
     pilot:      '파일럿·지역 적용',
     subsystems: '서브시스템',
     ops:        '운영·조직',
+    research:   '학술 논문',
+    patent:     '특허 출원',
   },
 
   // 문서 인덱스

@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이종 LLM 기반 법리 완전성 검증 및 예방 법학 지원 플랫폼 | K-OpenLaw 연구그룹</title>
+  <style>
+    /* ===== 한국 정부 표준 디자인 가이드 (KGDS) ===== */
+    :root {
+      --primary: #003087;        /* 정부 표준 파랑 */
+      --primary-dark: #001f5c;
+      --primary-light: #0047ba;
+      --accent: #c00;            /* 강조 빨강 */
+      --text-primary: #1a1a1a;
+      --text-secondary: #444;
+      --text-muted: #666;
+      --border: #c8d4e0;
+      --border-light: #dde6f0;
+      --bg-main: #f5f7fa;
+      --bg-white: #fff;
+      --bg-section: #eef2f7;
+      --bg-header: #003087;
+      --table-head: #003087;
+      --table-alt: #f0f4f9;
+      --tag-fact: #1967d2;
+      --tag-law: #0a7c59;
+      --tag-invalid: #b91c1c;
+      --tag-meta: #7c3aed;
+      --tag-conclusion: #d97706;
+      --font-base: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', sans-serif;
+      --font-mono: 'D2Coding', 'Consolas', monospace;
+      --radius: 4px;
+      --shadow: 0 1px 4px rgba(0,48,135,0.10);
+      --shadow-md: 0 2px 12px rgba(0,48,135,0.13);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-base);
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--text-primary);
+      background: var(--bg-main);
+    }
+
+    /* ===== 상단 공지 바 ===== */
+    .gov-topbar {
+      background: #1a1a1a;
+      color: #ccc;
+      font-size: 12px;
+      padding: 5px 0;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    /* ===== 헤더 ===== */
+    .gov-header {
+      background: var(--bg-header);
+      color: #fff;
+      padding: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    .gov-header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .gov-emblem {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+    .gov-header-text h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .gov-header-text p {
+      font-size: 12px;
+      opacity: 0.75;
+      margin-top: 2px;
+    }
+    .gov-meta-bar {
+      background: #002070;
+      padding: 6px 0;
+    }
+    .gov-meta-bar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .gov-meta-bar span { margin-right: 16px; }
+    .gov-meta-bar .badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      color: #fff;
+    }
+
+    /* ===== 네비게이션 ===== */
+    .gov-nav {
+      background: var(--bg-white);
+      border-bottom: 2px solid var(--primary);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    .gov-nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      overflow-x: auto;
+      gap: 0;
+    }
+    .gov-nav a {
+      display: block;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      white-space: nowrap;
+      border-bottom: 3px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .gov-nav a:hover {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* ===== 메인 레이아웃 ===== */
+    .page-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    /* ===== 논문 타이틀 박스 ===== */
+    .paper-title-box {
+      background: var(--bg-white);
+      border-left: 5px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+    .paper-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .paper-title-ko {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.5;
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+    }
+    .paper-title-en {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-style: italic;
+      border-top: 1px solid var(--border-light);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    .paper-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-light);
+    }
+    .paper-meta-item {
+      font-size: 13px;
+    }
+    .paper-meta-item .label {
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .paper-meta-item .value {
+      color: var(--text-primary);
+    }
+
+    /* ===== 개정 이력 박스 ===== */
+    .revision-box {
+      background: #fff9f0;
+      border: 1px solid #f0c060;
+      border-left: 4px solid #e08800;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .revision-box h3 {
+      color: #8a5400;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .revision-box ul { padding-left: 18px; color: var(--text-secondary); }
+    .revision-box li { margin-bottom: 4px; }
+
+    /* ===== 섹션 ===== */
+    .section {
+      background: var(--bg-white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .section-header {
+      background: var(--primary);
+      color: #fff;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-header .section-num {
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .section-body { padding: 24px; }
+
+    /* ===== 소제목 ===== */
+    .subsection { margin-bottom: 28px; }
+    .subsection:last-child { margin-bottom: 0; }
+    .subsection h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--border-light);
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+    }
+    .subsection h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 14px 0 8px;
+    }
+    .subsection p {
+      margin-bottom: 10px;
+      color: var(--text-primary);
+      line-height: 1.85;
+    }
+
+    /* ===== 초록 ===== */
+    .abstract-section {
+      background: var(--bg-white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .abstract-header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .abstract-body { padding: 24px; }
+    .abstract-block {
+      margin-bottom: 18px;
+    }
+    .abstract-block:last-child { margin-bottom: 0; }
+    .abstract-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .abstract-block p {
+      line-height: 1.9;
+      color: var(--text-primary);
+    }
+
+    /* ===== 핵심 발견 카드 ===== */
+    .finding-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 18px 0;
+    }
+    @media (max-width: 720px) { .finding-cards { grid-template-columns: 1fr; } }
+    .finding-card {
+      background: #f0f4f9;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .finding-card .fc-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .finding-card p { font-size: 14px; line-height: 1.75; }
+
+    /* ===== 키워드 ===== */
+    .keyword-box {
+      background: var(--bg-section);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-top: 16px;
+    }
+    .keyword-box .kw-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .kw-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .kw-tag {
+      background: #fff;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      border-radius: 12px;
+      padding: 3px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ===== 연구질문 ===== */
+    .rq-list { display: flex; flex-direction: column; gap: 12px; }
+    .rq-item {
+      display: flex;
+      gap: 14px;
+      background: var(--bg-section);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .rq-badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 10px;
+      white-space: nowrap;
+      height: fit-content;
+      margin-top: 2px;
+    }
+    .rq-text { font-size: 14px; line-height: 1.75; }
+
+    /* ===== 표 ===== */
+    .gov-table-wrap { overflow-x: auto; margin: 16px 0; }
+    .gov-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .gov-table th {
+      background: var(--table-head);
+      color: #fff;
+      font-weight: 700;
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid rgba(255,255,255,0.2);
+      white-space: nowrap;
+    }
+    .gov-table td {
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.65;
+    }
+    .gov-table tr:nth-child(even) td { background: var(--table-alt); }
+    .gov-table tr:hover td { background: #e8eef7; }
+    .gov-table tfoot td {
+      background: #f0f4f9;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    /* ===== 점수 카드 ===== */
+    .score-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .score-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 12px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .score-card .sc-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+    .score-card .sc-value { font-size: 26px; font-weight: 700; color: var(--primary); line-height: 1; }
+    .score-card .sc-max { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .score-card.highlight {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    .score-card.highlight .sc-label,
+    .score-card.highlight .sc-value,
+    .score-card.highlight .sc-max { color: #fff; }
+
+    /* ===== 태그 ===== */
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+    }
+    .tag-fact { background: #dbeafe; color: var(--tag-fact); border: 1px solid #bfdbfe; }
+    .tag-law { background: #d1fae5; color: var(--tag-law); border: 1px solid #a7f3d0; }
+    .tag-invalid { background: #fee2e2; color: var(--tag-invalid); border: 1px solid #fca5a5; }
+    .tag-meta { background: #ede9fe; color: var(--tag-meta); border: 1px solid #c4b5fd; }
+    .tag-conclusion { background: #fef3c7; color: var(--tag-conclusion); border: 1px solid #fcd34d; }
+    .tag-infer { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .tag-trigger { font-size: 12px; }
+
+    /* ===== 파이프라인 ===== */
+    .pipeline-steps { display: flex; flex-direction: column; gap: 0; }
+    .pipeline-step {
+      display: flex;
+      gap: 16px;
+      position: relative;
+    }
+    .pipeline-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 40px;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .ps-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      flex-shrink: 0;
+      z-index: 1;
+      box-shadow: 0 0 0 4px #e8eef7;
+    }
+    .ps-content {
+      padding: 8px 0 24px;
+    }
+    .ps-title { font-weight: 700; font-size: 14px; color: var(--primary-dark); margin-bottom: 6px; }
+    .ps-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+    /* ===== 아키텍처 계층 ===== */
+    .arch-layers { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+    .arch-layer {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .arch-layer-title {
+      background: var(--primary);
+      color: #fff;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .arch-layer-body {
+      background: var(--bg-section);
+      padding: 12px 16px;
+      font-size: 13px;
+      line-height: 1.75;
+    }
+    .arch-layer-body ul { padding-left: 18px; }
+    .arch-layer-body li { margin-bottom: 3px; }
+
+    /* ===== 오류 탐지 결과 ===== */
+    .error-cards { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+    .error-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      background: #fff5f5;
+      border: 1px solid #fca5a5;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      align-items: start;
+    }
+    .error-card .ec-title { font-weight: 700; font-size: 14px; color: #7f1d1d; margin-bottom: 4px; }
+    .error-card .ec-desc { font-size: 13px; color: var(--text-secondary); }
+    .error-card .ec-where { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .error-score {
+      background: #7f1d1d;
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .error-total {
+      background: #1a1a1a;
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ===== 순환 그래프 시각화 ===== */
+    .cycle-graph {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin: 14px 0;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+    .cg-node {
+      background: #fff;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      padding: 8px 14px;
+      margin: 4px 0;
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+    .cg-node.invalid { border-color: var(--accent); color: var(--accent); }
+    .cg-arrow {
+      font-size: 18px;
+      color: var(--text-muted);
+      display: block;
+      margin: 2px 0 2px 24px;
+    }
+    .cg-arrow.cycle { color: var(--accent); font-weight: 700; }
+    .cg-cycle-note {
+      background: #fff0f0;
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #7f1d1d;
+      margin-top: 12px;
+      font-family: var(--font-base);
+    }
+
+    /* ===== 향후 과제 ===== */
+    .task-list { display: flex; flex-direction: column; gap: 10px; }
+    .task-item {
+      display: flex;
+      gap: 14px;
+      background: var(--bg-section);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .task-badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 48px;
+      padding: 3px 10px;
+      border-radius: 10px;
+      text-align: center;
+      height: fit-content;
+      white-space: nowrap;
+    }
+    .task-badge.new { background: #c00; }
+    .task-text h4 { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .task-text p { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
+
+    /* ===== 기여 카드 ===== */
+    .contribution-list { display: flex; flex-direction: column; gap: 12px; }
+    .contribution-item {
+      background: var(--bg-section);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .contribution-item.new { border-left-color: var(--accent); }
+    .contribution-item h4 { font-size: 14px; font-weight: 700; color: var(--primary-dark); margin-bottom: 6px; }
+    .contribution-item.new h4 { color: var(--accent); }
+    .contribution-item p { font-size: 14px; color: var(--text-secondary); line-height: 1.75; }
+
+    /* ===== 위험과 대응 ===== */
+    .risk-list { display: flex; flex-direction: column; gap: 12px; }
+    .risk-item {
+      border: 1px solid #fcd34d;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .risk-title {
+      background: #fef9c3;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #713f12;
+      border-bottom: 1px solid #fcd34d;
+    }
+    .risk-response {
+      background: #fff;
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* ===== 참고문헌 ===== */
+    .ref-list { display: flex; flex-direction: column; gap: 10px; }
+    .ref-item {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--text-secondary);
+      padding: 10px 14px;
+      background: var(--bg-section);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-light);
+    }
+    .ref-status {
+      font-size: 14px;
+      flex-shrink: 0;
+      width: 22px;
+    }
+
+    /* ===== 주석 ===== */
+    .note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #f9fafb;
+      border-left: 3px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+
+    /* ===== 인포박스 ===== */
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .warn-box {
+      background: #fff9f0;
+      border: 1px solid #fed7aa;
+      border-left: 4px solid #e08800;
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    /* ===== 플로우차트 ===== */
+    .flowchart {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin: 14px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+    .fc-node {
+      background: #fff;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      padding: 10px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary-dark);
+      text-align: center;
+      min-width: 220px;
+    }
+    .fc-node.decision { background: #eff6ff; }
+    .fc-node.end { background: var(--primary); color: #fff; border-color: var(--primary-dark); }
+    .fc-arrow-down { font-size: 20px; color: var(--text-muted); line-height: 1.5; }
+    .fc-branch {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+    }
+    .fc-branch-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* ===== 학설 대립 비교 ===== */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 14px 0;
+    }
+    .compare-col { }
+    .compare-head {
+      background: var(--primary);
+      color: #fff;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 13px;
+      border-right: 1px solid rgba(255,255,255,0.2);
+    }
+    .compare-body {
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.75;
+      background: var(--bg-section);
+      border-right: 1px solid var(--border);
+    }
+    .compare-body ul { padding-left: 16px; }
+    .compare-body li { margin-bottom: 4px; }
+
+    /* ===== 인용 문장 ===== */
+    .judgment-quote {
+      background: #f8fafc;
+      border-left: 4px solid var(--text-muted);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 18px;
+      margin: 8px 0;
+      font-size: 14px;
+      line-height: 1.85;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+    .judgment-quote .jq-id {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      font-style: normal;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* ===== 푸터 ===== */
+    .gov-footer {
+      background: var(--primary-dark);
+      color: rgba(255,255,255,0.7);
+      padding: 28px 0 20px;
+      font-size: 13px;
+      margin-top: 48px;
+    }
+    .gov-footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .gov-footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      margin-bottom: 16px;
+    }
+    .gov-footer h4 { color: #fff; font-size: 14px; margin-bottom: 6px; }
+    .gov-footer p { line-height: 1.7; }
+    .footer-disclaimer {
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.7;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 14px;
+      margin-top: 4px;
+    }
+
+    /* ===== 인쇄 ===== */
+    @media print {
+      .gov-topbar, .gov-nav { display: none; }
+      .gov-header { print-color-adjust: exact; }
+      .section { break-inside: avoid; }
+    }
+
+    /* ===== 반응형 ===== */
+    @media (max-width: 768px) {
+      .page-wrap { padding: 16px 14px 48px; }
+      .paper-title-ko { font-size: 17px; }
+      .section-header h2 { font-size: 14px; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .fc-branch { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 상단 표시바 -->
+<div class="gov-topbar">
+  본 문서는 연구 목적으로 작성된 학술 논문입니다. 법적 효력이 없는 참고 자료입니다.
+</div>
+
+<!-- 헤더 -->
+<header class="gov-header">
+  <div class="gov-header-inner">
+    <svg class="gov-emblem" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-label="연구그룹 엠블럼">
+      <circle cx="24" cy="24" r="22" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <text x="24" y="20" text-anchor="middle" fill="#fff" font-size="9" font-weight="700" font-family="sans-serif">K-Open</text>
+      <text x="24" y="32" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-size="7" font-family="sans-serif">Law</text>
+      <circle cx="24" cy="24" r="4" fill="rgba(255,255,255,0.2)"/>
+    </svg>
+    <div class="gov-header-text">
+      <h1>K-OpenLaw 연구그룹 | AI City Inc.</h1>
+      <p>법률 인공지능 및 예방 법학 연구 플랫폼</p>
+    </div>
+  </div>
+  <div class="gov-meta-bar">
+    <div class="gov-meta-bar-inner">
+      <div>
+        <span>논문 버전: v3.0</span>
+        <span>발행일: 2026. 3. 22.</span>
+        <span>분류: 학술 연구 / 법률 AI</span>
+      </div>
+      <span class="badge">탐색적(Exploratory) 연구</span>
+    </div>
+  </div>
+</header>
+
+<!-- 네비게이션 -->
+<nav class="gov-nav" aria-label="본문 내비게이션">
+  <div class="gov-nav-inner">
+    <a href="#abstract">초록</a>
+    <a href="#intro">1. 서론</a>
+    <a href="#background">2. 배경·선행연구</a>
+    <a href="#architecture">3. 시스템 아키텍처</a>
+    <a href="#method">4. 연구 방법론</a>
+    <a href="#results">5. 결과</a>
+    <a href="#discussion">6. 논의</a>
+    <a href="#conclusion">7. 결론</a>
+    <a href="#references">참고문헌</a>
+    <a href="#appendix">부록</a>
+  </div>
+</nav>
+
+<!-- 메인 -->
+<main class="page-wrap">
+
+  <!-- 논문 제목 -->
+  <div class="paper-title-box">
+    <div class="paper-label">학술 논문 · v3.0 · 2026년 3월 22일</div>
+    <div class="paper-title-ko">
+      이종 LLM 기반 법리 완전성 검증, 판결문 법리 오류 자동 식별 및<br>
+      예방 법학 지원 플랫폼: OpenHash-고팡 생태계를 활용한 분쟁 예방적 가능성 탐구
+    </div>
+    <div class="paper-title-en">
+      Validating Legal Comprehensiveness of Heterogeneous LLM Systems, Automatic Identification of Legal Reasoning Errors in Judicial Decisions, and Proposing a Preventive Law Support Platform: Exploring the Dispute-Preventive Potential of the OpenHash-Gopang Ecosystem
+    </div>
+    <div class="paper-meta-grid">
+      <div class="paper-meta-item">
+        <span class="label">저자</span>
+        <span class="value">[저자명]</span>
+      </div>
+      <div class="paper-meta-item">
+        <span class="label">소속</span>
+        <span class="value">K-OpenLaw 연구그룹, AI City Inc.</span>
+      </div>
+      <div class="paper-meta-item">
+        <span class="label">버전</span>
+        <span class="value">3.0 (2026년 3월 22일)</span>
+      </div>
+      <div class="paper-meta-item">
+        <span class="label">특허출원</span>
+        <span class="value">제10-2026-0018910호 외 2건</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- v2.0 → v3.0 개정 이력 -->
+  <div class="revision-box">
+    <h3>▣ v2.0 → v3.0 개정 사항</h3>
+    <ul>
+      <li>판결문 문장 분해 및 법리 오류 자동 식별 파이프라인(5단계)을 연구 방법론의 독립 절(4.6)로 전면 추가</li>
+      <li>실제 원심 판결문(광주고법(제주) 2025나10208) P1~P4 문장 분해 및 5개 법리 오류(-34점) 탐지 결과를 5.5절 결과로 추가</li>
+      <li>새로운 연구 기여(기여 4) 추가: 판결문 분해-태깅-그래프-탐지 파이프라인의 예방 법학적 함의</li>
+      <li>2.5절 추가: 판결문 논리 구조 분석 연구의 공백 / 1.5절 추가: 핵심 기술 발명의 선언</li>
+      <li>평가방법론 v2.1의 논리적 오류 탐지 체계(9개 유형, 감산 규정 14건) 반영 / 향후 연구 과제 8 추가</li>
+    </ul>
+  </div>
+
+  <!-- ===== 초록 ===== -->
+  <section class="abstract-section" id="abstract">
+    <div class="abstract-header">초록 (Abstract)</div>
+    <div class="abstract-body">
+
+      <div class="abstract-block">
+        <div class="abstract-label">배경</div>
+        <p>현행 다심제(1심·2심·3심) 및 헌법재판소 체제는 사법 정의 실현을 위한 정교한 제도적 장치이다. 그러나 연간 691만 건(법원행정처, 2024)에 달하는 소송 접수량, 평균 3년 이상의 처리 기간, 높은 법률 비용은 시민, 특히 경제적 취약계층의 사법 접근성을 실질적으로 제약하는 사회적 과제로 남아 있다. 이 과부하를 완화하기 위해서는 분쟁이 소송으로 비화하기 이전에 예방하는 새로운 접근이 필요하다.</p>
+      </div>
+
+      <div class="abstract-block">
+        <div class="abstract-label">목적</div>
+        <p>본 논문은 세 가지 목적을 추구한다. 첫째, 이종 대형 언어 모델(LLM)의 법리 완전성(legal comprehensiveness)을 독립적·객관적으로 검증한다. 둘째, 판결문을 구성하는 복합문을 의미 단위로 분해하고, 논리 구성 요소를 태깅하며, 인과관계 그래프를 생성하여 순환 논증·자기실현적 예언·인과관계 역전 등 법리 오류를 자동 식별하는 5단계 파이프라인을 제안한다. 셋째, 두 기술을 OpenHash 분산원장과 결합한 고팡(Gopang) 예방 법학 지원 플랫폼의 이론적 토대를 제시한다.</p>
+      </div>
+
+      <div class="abstract-block">
+        <div class="abstract-label">방법</div>
+        <p>K-OpenLaw v3.5 실증 연구(임대차보증금 반환 분쟁, 1심·2심 완료, 대법원 상고 진행 중)의 데이터를 기반으로, 이종 LLM 5모듈 아키텍처의 법리 분석 결과를 5개 차원(공정성·객관성·합리성·사실정확성·법적정당성)과 v2.1 평가방법론(9개 논리 오류 유형, 14개 감산 규정)으로 측정하였다. 나아가 실제 원심 판결문(광주고법(제주) 2025나10208) P1~P4 문장에 5단계 파이프라인을 적용하여 법리 오류 자동 탐지 가능성을 실증하였다.</p>
+      </div>
+
+      <!-- 핵심 기술 발견 -->
+      <div class="abstract-label" style="margin-top:18px;">핵심 기술 발견</div>
+      <div class="finding-cards">
+        <div class="finding-card">
+          <div class="fc-num">핵심 기술 발견 1</div>
+          <p>OpenHash 분산원장으로 사전 등록된 소통 기록은 평균 <strong>4.2ms</strong>의 해시 검증으로 진정성이 확인되어, 분쟁 발생 시 사실 확인 절차를 사실상 <strong>1초 이내</strong>에 완료할 수 있다.</p>
+        </div>
+        <div class="finding-card">
+          <div class="fc-num">핵심 기술 발견 2</div>
+          <p>실제 원심 판결문 핵심 문장 4개(P1~P4)를 5단계 파이프라인으로 처리한 결과, 법률 없는 권리 창설·변론주의 위반·순환 논증·자기실현적 예언·인과관계 역전의 <strong>5개 법리 오류(-34점)</strong>가 자동으로 탐지되었다.</p>
+        </div>
+      </div>
+
+      <div class="abstract-block">
+        <div class="abstract-label">결과</div>
+        <p>이종 LLM은 6단계 규범 위계를 전수 적용하고 양측 주장을 누락 없이 처리함으로써, <strong>법리 완전성 지표 92점(A)</strong>을 달성하였다. 이 결과는 탐색적(exploratory) 성격이며, 제3 법학자 집단의 블라인드 교차 평가를 통해 추가 확인되어야 한다.</p>
+      </div>
+
+      <div class="abstract-block">
+        <div class="abstract-label">결론</div>
+        <p>이종 LLM의 법리 완전성 검증, 판결문 법리 오류 자동 식별 파이프라인, 그리고 OpenHash 기반 사실 확인 1초 이내의 세 기술이 통합될 경우, 고팡 플랫폼은 시민이 분쟁 초기 단계에서 법리적 판단의 기준점을 얻고 불필요한 소송을 자발적으로 회피하도록 돕는 예방 법학 도구로 기능할 수 있다.</p>
+      </div>
+
+      <div class="keyword-box">
+        <div class="kw-label">핵심어</div>
+        <div class="kw-list">
+          <span class="kw-tag">이종 LLM</span><span class="kw-tag">법리 완전성</span><span class="kw-tag">판결문 문장 분해</span>
+          <span class="kw-tag">법리 오류 자동 식별</span><span class="kw-tag">예방 법학</span><span class="kw-tag">OpenHash</span>
+          <span class="kw-tag">고팡(Gopang)</span><span class="kw-tag">분산원장</span><span class="kw-tag">분쟁 예방</span>
+          <span class="kw-tag">사법 접근성</span><span class="kw-tag">규범 위계</span><span class="kw-tag">증거 무결성</span>
+          <span class="kw-tag">K-OpenLaw</span><span class="kw-tag">순환 논증</span><span class="kw-tag">자기실현적 예언</span>
+          <span class="kw-tag">인과관계 역전</span><span class="kw-tag">법률 없는 권리 창설</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 1. 서론 ===== -->
+  <section class="section" id="intro">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>서론</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="subsection">
+        <h3>1.1 사법 수요 과부하와 분쟁 예방의 필요성</h3>
+        <p>대한민국의 사법 체계는 엄밀한 다심제(1심·2심·3심)와 헌법재판소라는 이원적 구조를 통해 법치주의와 인권 보호를 실현해 왔다. 이 체계는 복수의 심급과 법관을 통해 오류 가능성을 다층적으로 보정하는, 오랜 경험 위에 구축된 사회적 합의의 산물이다.</p>
+        <p>그러나 이 체계가 직면한 현실적 과제 또한 분명하다. 2024년 한 해 동안 한국 법원에 접수된 소송은 <strong>691만 건</strong>에 달하며(법원행정처, 2024), 1심부터 3심까지의 처리 기간은 평균 3년 이상이다. 법률 비용은 수천만 원에서 수억 원에 이르러, 경제적 여건이 충분하지 않은 시민에게는 사법 절차에 접근하는 것 자체가 현실적으로 어렵다.</p>
+        <p>이 문제의 근원에는 구조적 특성이 있다. 대부분의 민·형사 분쟁은 소통 기록, 계약서, 거래 내역 등에 이미 그 징후가 담겨 있음에도, 당사자들이 법적 의미를 제때 인식하지 못한 채 소송으로 진입하는 경우가 많다. 분쟁이 소송으로 비화한 이후에는 아무리 제도를 효율화하더라도 이미 발생한 정신적·물질적 피해를 되돌릴 수 없다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>1.2 판결문 논리 구조 분석의 필요성</h3>
+        <p>분쟁이 소송으로 진행된 경우에도, 판결의 내부 논리 구조를 체계적으로 검토하는 도구가 없다는 문제가 존재한다. 법률 전문가가 판결문을 검토할 때, 결론이 옳은지 여부는 직관적으로 파악하더라도, 전제와 결론 사이의 논증이 순환하고 있는지, 채권자 자신의 행위가 자신의 권리 발생 원인이 되는 구조인지, 법률에 없는 권리 개념이 창설되었는지를 체계적으로 발견하는 것은 매우 어렵다.</p>
+        <p>판결문은 여러 전제와 추론이 하나의 긴 복합문에 혼재하는 구조로 작성된다. 독자가 전체 문장을 읽을 때 개별 논리 단위 간 관계가 은폐되어 순환 논증 등의 오류를 식별하기 어렵다. 이 어려움을 기술적으로 해결하는 것이 본 연구의 두 번째 목표이다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>1.3 예방 법학의 가능성 재조명</h3>
+        <p>이러한 배경에서 예방 법학(Preventive Law)의 가능성이 재조명된다. Louis Brown(1950)이 체계화한 예방 법학의 핵심 명제는, 법률 전문가의 역할이 분쟁 발생 후 대응이 아니라 분쟁 자체를 사전에 방지하는 조언에 있다는 것이다. 기술이 이 철학을 시민의 일상에 구현할 수 있다면, 소송으로 이어지는 분쟁의 수를 의미 있게 줄이고 법원의 부담을 완화하는 데 실질적으로 기여할 수 있다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>1.4 이종 LLM의 가능성과 검증의 필요</h3>
+        <p>최근 대형 언어 모델(LLM)의 급속한 발전은 법률 분야에서도 새로운 가능성을 열었다. LLM은 인지적 피로 없이 수천 개의 법령 조항을 검토하고, 양측의 주장과 증거를 누락 없이 처리하며, 규범 위계를 일관되게 적용할 수 있다.</p>
+        <p>그러나 이 잠재력이 실제로 얼마나 신뢰할 수 있는지는 별도의 엄밀한 검증 없이는 주장할 수 없다. 따라서 본 연구는 이종 LLM의 법리 분석 능력을 제3의 독립적인 법학자 집단이 객관적으로 검증하는 것을 핵심 방법론으로 채택한다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>1.5 핵심 기술 발명의 선언</h3>
+        <p>본 연구는 다음 두 가지 기술적 발명을 제안한다.</p>
+        <div class="finding-cards">
+          <div class="finding-card">
+            <div class="fc-num">발명 1 — 판결문 법리 오류 자동 식별 5단계 파이프라인</div>
+            <p style="font-size:13px;">특허출원 제10-2026-XXXXXX호. 판결문의 복합문을 의미 단위로 분해(2단계) → 논리 구성 요소에 태그 자동 부여(3단계) → 인과관계 방향성 그래프 생성(4단계) → 9개 유형의 법리 오류 자동 탐지(5단계)하는 파이프라인. 실제 원심 판결문 P1~P4에서 5개 오류(-34점)를 자동 탐지하여 기술적 효과를 실증하였다.</p>
+          </div>
+          <div class="finding-card">
+            <div class="fc-num">발명 2 — OpenHash 분산원장 기반 사실 확인 1초 이내</div>
+            <p style="font-size:13px;">특허출원 제10-2026-0018910호. 소통 기록 생성 즉시 해시 등록(4.2ms) → 분쟁 발생 시 해시 재검증 1초 이내 완료. 사실 다툼을 원천 차단하고 분쟁을 법리 쟁점으로 신속하게 이동시킨다.</p>
+          </div>
+        </div>
+        <p style="margin-top:10px;">두 발명이 이종 LLM 5모듈 아키텍처(특허출원 제10-2026-0039504호)와 통합되어 고팡 예방 법학 플랫폼을 구성한다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>1.6 연구 취지의 명확한 선언</h3>
+        <div class="info-box">
+          <p><strong>첫째,</strong> 본 연구는 국가 사법 체제를 대체하거나 법원·법조인의 역할을 축소하는 것을 목표로 하지 않는다.</p>
+          <p><strong>둘째,</strong> 본 연구는 이종 LLM의 법리 완전성 수준과 판결문 내 법리 오류 자동 탐지 가능성을 객관적으로 측정하고 학술적으로 기록하는 것을 목표로 한다.</p>
+          <p><strong>셋째,</strong> 이 측정 결과가 독립 검증되어 대중의 신뢰를 얻는다면, 시민이 분쟁 초기 단계에서 자발적으로 활용할 수 있는 예방 법학 도구의 근거가 마련된다.</p>
+          <p><strong>넷째,</strong> 시민의 자발적 선택의 결과로 법원에 제기되는 분쟁의 수가 줄어든다면, 이는 국가 사법 체제와 상호 보완적인 관계를 형성하는 것이다.</p>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>1.7 연구 질문</h3>
+        <div class="rq-list">
+          <div class="rq-item">
+            <span class="rq-badge">RQ1</span>
+            <span class="rq-text">이종 LLM은 실제 민사 사건에서 법리 완전성 측면에서 어느 수준의 성과를 달성하며, 이는 제3의 독립 법학자 집단에 의해 어떻게 검증되는가?</span>
+          </div>
+          <div class="rq-item">
+            <span class="rq-badge">RQ2</span>
+            <span class="rq-text">OpenHash 분산원장 기반 증거 무결성 보장(사실 확인 1초 이내)은 분쟁의 조기 해소와 소송 진입 방지에 어떻게 기여하는가?</span>
+          </div>
+          <div class="rq-item">
+            <span class="rq-badge">RQ3</span>
+            <span class="rq-text">판결문을 구성하는 문장을 의미 단위로 분해하고 인과관계 그래프를 생성하면, 복합문으로 은폐된 법리 오류를 자동으로 탐지할 수 있는가?</span>
+          </div>
+          <div class="rq-item">
+            <span class="rq-badge">RQ4</span>
+            <span class="rq-text">위 세 기술을 통합한 고팡 예방 법학 플랫폼은 국가 사법 체제와 어떤 방식으로 상호 보완적 관계를 형성하는가?</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 배경 및 선행연구 ===== -->
+  <section class="section" id="background">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>배경 및 선행연구</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="subsection">
+        <h3>2.1 예방 법학(Preventive Law)의 이론적 기반</h3>
+        <p>예방 법학(Preventive Law)은 Louis Brown(1950)이 체계화한 개념으로, 법률 전문가의 역할이 분쟁 발생 후 사후 대응이 아니라 분쟁 자체를 예방하는 사전 조언에 있다는 철학을 담고 있다. Brown에 따르면 대부분의 법적 문제는 당사자가 행위 시점에서 법적 함의를 충분히 인식하지 못하거나, 분쟁으로 비화할 수 있는 소통을 관리하지 못하는 데서 비롯된다.</p>
+        <p>Brown &amp; Dauer(1978)는 예방 법학을 조직 차원에서 확장하여 "법적 건강 감사(Legal Health Audit)" 개념을 제안하였다. Barton &amp; Bibas(2017)는 법률 자동화가 법적 서비스의 민주화를 통해 예방적 법률 접근성을 확대할 수 있음을 논하였다.</p>
+        <p>본 연구는 예방 법학의 이론적 틀을 분산원장 기반 증거 사전 보존, 이종 LLM의 법리 완전성 검증, 그리고 판결문 법리 오류 자동 탐지 파이프라인과 결합하여 고팡 플랫폼의 이론적 토대로 구현한다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>2.2 온라인 분쟁 해결(ODR)의 발전과 한계</h3>
+        <p>Katsh &amp; Rifkin(2001)은 인터넷이 분쟁 해결에 있어 "제4의 당사자(Fourth Party)"로 기능할 수 있음을 주장하였다. eBay Resolution Center, ICANN UDRP, 유럽연합 ODR 플랫폼(Directive 2013/11/EU) 등이 실용적 ODR 시스템으로 정착하였다.</p>
+        <p>Zeleznikow(2021)는 AI 기반 분쟁 해결 지원의 핵심 과제로 (1) 증거 진정성 보장, (2) 알고리즘 편향 방지, (3) 법리적 정확성 확보를 제시하였다. 고팡 예방 법학 플랫폼은 이 세 과제에 각각 OpenHash(1초 이내 사실 확인), 이종 LLM 대립 논증, 6단계 규범 위계 데이터베이스로 대응한다.</p>
+        <p>기존 ODR 시스템과 본 연구의 근본적 차이는, 기존 시스템이 분쟁 발생 이후의 해결에 집중하는 반면, 고팡 플랫폼은 소통 기록이 생성되는 순간부터 무결성을 보장함으로써 분쟁 자체의 발생을 억제하는 구조를 지향한다는 점이다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>2.3 LLM 기반 법률 AI의 현황과 연구 공백</h3>
+        <p>He et al.(2024)의 AgentsCourt, Jiang &amp; Yang(2024)의 Agents on the Bench, Chen et al.(2025)의 AgentCourt 등은 멀티 에이전트 LLM 기반 법정 시뮬레이션의 가능성을 탐구하였다. 그러나 이들 연구의 공통적 한계는 다음과 같다.</p>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>#</th><th>공통 한계</th></tr></thead>
+            <tbody>
+              <tr><td>(1)</td><td>모든 에이전트가 단일 연구 주체에 의해 중앙 집중적으로 운용됨</td></tr>
+              <tr><td>(2)</td><td>실제 법원에서 진행된 사건이 아닌 가상 시나리오 기반</td></tr>
+              <tr><td>(3)</td><td>이종 LLM 성능의 독립적 외부 검증 구조 부재</td></tr>
+              <tr><td>(4)</td><td>분쟁 예방 기능 부재</td></tr>
+              <tr><td>(5)</td><td>판결문 논리 구조 자동 분석 및 법리 오류 자동 탐지 기능 부재</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Cui et al.(2023)의 ChatLaw는 LLM 기반 법률 질의응답에 집중하며, 분쟁 해결이나 예방, 판결문 분석에는 적용되지 않는다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>2.4 연구 공백의 정의</h3>
+        <p>위 검토를 종합하면, 다음의 네 요소를 동시에 갖춘 연구는 아직 존재하지 않는다.</p>
+        <div class="info-box">
+          <p><strong>(a)</strong> 소통 기록의 생성 시점부터 분산원장으로 무결성을 보장하는 증거 관리 시스템과 법리 분석 AI의 통합 (예방 기능)</p>
+          <p><strong>(b)</strong> 운용 주체가 독립된 이종 LLM 기반 대립 논증 구조</p>
+          <p><strong>(c)</strong> 실제 법원에서 진행된 사건을 대상으로, 제3의 독립 법학자 집단이 이종 LLM의 법리 완전성을 검증하는 구조</p>
+          <p><strong>(d)</strong> 판결문 복합문을 의미 단위로 분해·태깅·그래프화하여 순환 논증, 자기실현적 예언, 법률 없는 권리 창설 등 법리 오류를 자동으로 탐지하는 파이프라인</p>
+        </div>
+        <p>본 연구는 이 네 요소를 통합한 K-OpenLaw 시스템의 첫 번째 실증 연구이다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>2.5 판결문 논리 구조 분석 연구의 공백 <span style="font-size:11px;background:#fee2e2;color:#7f1d1d;padding:2px 8px;border-radius:10px;font-weight:700;vertical-align:middle;margin-left:6px;">신설</span></h3>
+        <p>판결문의 내부 논리 구조를 자동으로 분석하는 연구는 극히 제한적이다. 자연어처리(NLP) 분야에서 법률 텍스트 분류, 판례 검색, 요약 등의 연구는 활발하지만, 판결문의 전제-추론-결론 구조를 분해하고 논리적 오류를 자동 탐지하는 시스템은 보고된 바 없다.</p>
+        <p>특히 다음 세 유형의 법리 오류는 기존 NLP 도구로는 탐지가 어렵다.</p>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>오류 유형</th><th>설명</th></tr></thead>
+            <tbody>
+              <tr><td><strong>순환 논증</strong><br>(Circular Reasoning)</td><td>결론이 이미 전제에 포함되어 있는 구조. 복합문이 여러 단계에 걸쳐 순환하기 때문에 전체 문단을 읽는 독자도 놓치기 쉽다.</td></tr>
+              <tr><td><strong>자기실현적 예언</strong><br>(Self-Fulfilling Prophecy)</td><td>채권자의 행위가 자신의 권리 발생 원인이 되는 구조. 원인과 결과의 방향이 법률 논증 내에서 역전되어 있어 선형적 독해로는 발견하기 어렵다.</td></tr>
+              <tr><td><strong>법률 없는 권리 창설</strong><br>(Creation of Non-Existent Legal Right)</td><td>법률 데이터베이스에 존재하지 않는 권리 개념이 판결의 핵심 근거로 사용된 경우. 유사한 법적 개념과 혼동하기 쉬워 법률 전문가도 식별에 상당한 시간이 필요하다.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 시스템 아키텍처 ===== -->
+  <section class="section" id="architecture">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>시스템 아키텍처</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="subsection">
+        <h3>3.1 고팡(Gopang) 예방 법학 플랫폼 전체 구조</h3>
+        <p>고팡은 카카오톡과 유사한 채팅 앱에 AI 개인 비서(AI Agent)와 OpenHash 분산원장 기술을 결합한 차세대 소통 플랫폼이다. 플랫폼은 세 기술 계층으로 구성된다.</p>
+        <div class="arch-layers">
+          <div class="arch-layer">
+            <div class="arch-layer-title">Layer 1 — 소통 및 증거 보존 계층 (고팡 + OpenHash)</div>
+            <div class="arch-layer-body">
+              <ul>
+                <li>모든 소통·거래·계약의 생성 즉시 해시 등록 (<strong>4.2ms 이내</strong>)</li>
+                <li>분쟁 발생 시 증거 패키지 자동 생성 → 사실 확인 <strong>1초 이내</strong></li>
+                <li>AI 개인 비서의 위법 징후 실시간 감지·경고 (예방 법학 기능)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="arch-layer">
+            <div class="arch-layer-title">Layer 2 — 법리 완전성 검증 및 법리 오류 탐지 계층 (이종 LLM 5모듈 아키텍처 + 파이프라인)</div>
+            <div class="arch-layer-body">
+              <ul>
+                <li>분야별 특화 LLM 군(群): 헌법·민법·형법·특별법 등 전수 검토</li>
+                <li>6단계 규범 위계 강제 적용</li>
+                <li>양측 주장·증거 완전 처리 (누락 없음)</li>
+                <li>판결문 복합문 → 의미 단위 분해 → 법리 오류 자동 탐지</li>
+              </ul>
+            </div>
+          </div>
+          <div class="arch-layer">
+            <div class="arch-layer-title">Layer 3 — 독립 검증 및 사용자 선택 계층</div>
+            <div class="arch-layer-body">
+              <ul>
+                <li>이종 LLM 법리 완전성을 독립 법학자가 객관적 평가</li>
+                <li>시민은 결과를 참고하여 자발적으로 분쟁 해소 또는 국가 사법 체제 이용을 자유롭게 선택</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.2 OpenHash 분산원장과 1초 이내 사실 확인</h3>
+        <h4>3.2.1 기술적 구조</h4>
+        <p>OpenHash는 기존 블록체인의 고비용 합의 메커니즘을 기존 통신 인프라의 물리적 계층 구조로 대체한 분산원장 기술이다(특허출원 제10-2026-0018910호).</p>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>구성 요소</th><th>내용</th></tr></thead>
+            <tbody>
+              <tr><td>계층 선택</td><td>읍면동(60%) → 시군구(30%) → 광역시도(9%) → 국가(1%) 4단계 확률적 계층 선택</td></tr>
+              <tr><td>해시 생성</td><td>SHA-256 이중 재해싱으로 해시값 생성</td></tr>
+              <tr><td>서명</td><td>BLS(Boneh-Lynn-Shacham) 서명으로 데이터 등록</td></tr>
+              <tr><td>검증 방향</td><td>상위 계층이 하위 계층을 주기적으로 검증(하향식) + 하위 계층이 상위 계층 이상동작을 실시간 감시(상향식)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>3.2.2 사실 확인 1초 이내의 실현 원리</h4>
+        <div class="compare-grid">
+          <div class="compare-col">
+            <div class="compare-head">기존 방식</div>
+            <div class="compare-body">소통 기록 생성 → (시간 경과) → 분쟁 발생 → 증거 제출 → 진정성 다툼 → 감정·대조 (<strong>수주~수개월</strong>) → 증거 채택</div>
+          </div>
+          <div class="compare-col">
+            <div class="compare-head">OpenHash 방식</div>
+            <div class="compare-body">소통 기록 생성 → 즉시 해시 등록 (<strong>4.2ms</strong>) → (시간 경과) → 분쟁 발생 → 증거 제출 → 해시 재검증 (<strong>&lt;1초</strong>) → 사실 확인 완료</div>
+          </div>
+        </div>
+        <p class="note">K-OpenLaw v3.5 실증 연구에서 24개 증거 항목 전부의 무결성이 항목당 평균 4.2ms의 검증 시간으로 확인되었다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>3.3 이종 LLM 법리 완전성 검증 시스템 (K-OpenLaw)</h3>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>모듈</th><th>역할</th><th>주요 기능</th></tr></thead>
+            <tbody>
+              <tr><td><strong>모듈 1·2</strong><br>대립 논증 에이전트</td><td>원고 측 / 피고 측</td><td>각각 독립된 LLM 사용; 6단계 규범 위계 강제 적용; 운용 주체 완전 독립</td></tr>
+              <tr><td><strong>모듈 3</strong><br>논쟁 관리 엔진</td><td>쟁점 추출 및 관리</td><td>법률 특화 NLP로 쟁점 실시간 추출; 변론주의 구조적 준수</td></tr>
+              <tr><td><strong>모듈 4</strong><br>법리 완전성 검토 패널</td><td>전수 검토</td><td>이종 LLM 2개 이상(예: GPT-4o + Gemini); 미처리 쟁점 전수 검토</td></tr>
+              <tr><td><strong>모듈 5</strong><br>절차 관리</td><td>증거 검증 및 로그</td><td>OpenHash 재확인; 모든 절차 로그를 OpenHash 공개 원장에 등록</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>3.4 고팡 AI 개인 비서의 예방 법학 기능 (101-P)</h3>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>단계</th><th>기준</th><th>내용</th></tr></thead>
+            <tbody>
+              <tr><td>① 실시간 분석</td><td>24시간/365일</td><td>고팡을 통해 오가는 모든 소통을 실시간 분석; 위법 가능성 점수 산출(0.0~1.0)</td></tr>
+              <tr><td>② 주의 (101-P1)</td><td>점수 0.3 이상</td><td>위험 징후 초기 안내</td></tr>
+              <tr><td>③ 경고 (101-P2)</td><td>점수 0.6 이상</td><td>구체적 위험 경고</td></tr>
+              <tr><td>④ 긴급안내 (101-P3)</td><td>점수 0.85 이상</td><td>즉각 대응 요청</td></tr>
+              <tr><td>⑤ 이력 분석</td><td>누적</td><td>경고 이력·근거 법조항·타임스탬프 기록 및 OpenHash 등록; 사용자별 분쟁 위험도 산출</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 연구 방법론 ===== -->
+  <section class="section" id="method">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>연구 방법론</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="subsection">
+        <h3>4.1 이종 LLM 법리 완전성 검증의 전체 설계</h3>
+        <div class="compare-grid">
+          <div class="compare-col">
+            <div class="compare-head">검증 주체 독립성 확보</div>
+            <div class="compare-body">
+              <ul>
+                <li>K-OpenLaw 연구그룹: 시스템 개발 및 법리 검토 보고서 생성</li>
+                <li>독립 법학자 집단: 동일 평가 루브릭으로 블라인드 교차 평가</li>
+                <li>평가자 간 신뢰도(Cohen's κ) 측정: κ ≥ 0.61 미달 시 루브릭 재정비</li>
+              </ul>
+            </div>
+          </div>
+          <div class="compare-col">
+            <div class="compare-head">비교 구조</div>
+            <div class="compare-body">
+              <ul>
+                <li>K-OpenLaw 법리 검토 보고서와 실제 판결문을 나란히 제시</li>
+                <li>두 문서 모두 사건 당사자 정보를 익명화</li>
+                <li>독립 법학자들이 어느 쪽이 AI 분석인지 모르는 상태에서 평가</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>4.2 사례 선정</h3>
+        <p>경제적 취약계층에 속하는 자력 소송 원고 대 공기업 임대인(피고) 간 임대차보증금 반환 분쟁(1심·2심 완료, 대법원 상고 진행 중)을 분석 대상으로 선정하였다.</p>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>기준</th><th>내용</th></tr></thead>
+            <tbody>
+              <tr><td>① 법적 복잡성</td><td>파산법(채무자회생법), 민사소송법, 임대차법, 헌법상 주거권, 공기업 특별 의무가 교차하는 고난도 사안</td></tr>
+              <tr><td>② 취약계층 맥락</td><td>법률 대리인 없이 진행된 자력 소송</td></tr>
+              <tr><td>③ 전 심급 기록 보존</td><td>1심·2심 판결문 확정, 대법원 상고 진행 중</td></tr>
+              <tr><td>④ 법리 쟁점 명확성</td><td>양 심급의 법리 검토 범위 비교 가능</td></tr>
+              <tr><td>⑤ K-OpenLaw 실전 적용</td><td>AI 분석이 실제 소송에서 참고 자료로 활용; in vivo 맥락에서의 검증 가능</td></tr>
+              <tr><td>⑥ 파이프라인 적용 가능성</td><td>원심 판결문에 복합문 구조로 은폐된 법리 오류가 존재하여 파이프라인 실증에 최적</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>4.3 법리 완전성 평가 방법론 (v2.1 기반)</h3>
+        <div class="warn-box">
+          <strong>평가 목적의 재확인:</strong> 이 평가는 법원 판결의 옳고 그름을 평가하기 위한 것이 아니다. 이종 LLM 시스템이 주어진 법적 쟁점에 대해 얼마나 완전하게 법리를 검토하는지를 측정하기 위한 것이다.
+        </div>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>평가 영역</th><th>배점</th><th>주요 항목</th></tr></thead>
+            <tbody>
+              <tr><td><strong>I. 공정성</strong> (Fairness)</td><td>20점</td><td>당사자 주장 반영도, 무기대등 원칙, 석명의무, 사회적 약자 보호, 구조적 중립성, ADR 접근성, 공익적 책임 고려</td></tr>
+              <tr><td><strong>II. 객관성</strong> (Objectivity)</td><td>20점</td><td>증거 기반 사실 인정, 증거 채택·배척 이유 명시, 논리적 추론 타당성, 상충 증거 처리 투명성, 수치·계산 정확성</td></tr>
+              <tr><td><strong>III. 합리성</strong> (Reasonableness)</td><td>20점</td><td>쟁점 누락 여부, 논리적 일관성, 규범 위계 준수, 대안 법리 검토; <strong>논리적 오류 부재(III-7): 9개 유형 오류 평가</strong></td></tr>
+              <tr><td><strong>IV. 사실정확성</strong> (Factual Accuracy)</td><td>20점</td><td>사실 오인 여부, OpenHash 증거 무결성 검증 반영, 시간적 순서 정확성, 전문증거 처리</td></tr>
+              <tr><td><strong>V. 법적정당성</strong> (Legal Legitimacy)</td><td>20점</td><td>적용 법령 정확성, 판례 적용 적절성, 헌법적 가치 부합성, 강행 규정 준수, 법체계 위계 실질적 준수</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>감산 규정 (14개 유형)</h4>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>유형</th><th>감산</th></tr></thead>
+            <tbody>
+              <tr><td>변론주의 위반 (사실)</td><td>-5점</td></tr>
+              <tr><td>변론주의 위반 (법리)</td><td>-10점</td></tr>
+              <tr><td>석명의무 불이행</td><td>-5점</td></tr>
+              <tr><td>증거조사 의무 불이행</td><td>-5점</td></tr>
+              <tr><td>판결 이유 불비·이유 모순</td><td>-5점</td></tr>
+              <tr><td>법률 없는 권리 창설</td><td>-10점</td></tr>
+              <tr><td>자기실현적 예언적 논리</td><td>-5점</td></tr>
+              <tr><td>순환 논증</td><td>-5점</td></tr>
+              <tr><td>법체계 전도</td><td>-10점</td></tr>
+              <tr><td>공익적 책임 방기</td><td>-5점</td></tr>
+              <tr><td>사회적 약자 보호 의무 위반</td><td>-5점</td></tr>
+              <tr><td>헌법적 가치의 형식적 해석</td><td>-5점</td></tr>
+              <tr><td>인과관계 역전</td><td>-4점</td></tr>
+              <tr><td>동일 하자 2심급 이상 연속</td><td>-2점 추가</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="info-box" style="font-size:13px;">
+          <p><strong>분리 평가 체계</strong></p>
+          <p>법리적 완성도 (0~60점) = (영역III + 영역IV + 영역V) × 0.6</p>
+          <p>절차적 정당성 (0~40점) = (영역I + 영역II) × 0.8</p>
+          <p><strong>최종 점수 = max(0, 법리적 완성도 + 절차적 정당성 − Σ 감산)</strong></p>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>4.6 판결문 문장 분해 및 법리 오류 자동 식별 파이프라인 <span style="font-size:11px;background:#fee2e2;color:#7f1d1d;padding:2px 8px;border-radius:10px;font-weight:700;vertical-align:middle;margin-left:6px;">신설</span></h3>
+        <p>본 연구의 두 번째 방법론은 판결문 복합문을 처리하여 법리 오류를 자동 탐지하는 5단계 파이프라인이다(특허출원 v3 기반).</p>
+        <div class="pipeline-steps" style="margin-top:20px;">
+          <div class="pipeline-step">
+            <div class="ps-num">1</div>
+            <div class="ps-content">
+              <div class="ps-title">판결문 입력</div>
+              <div class="ps-desc">법원 판결문 또는 AI 생성 법리 검토 보고서 입력</div>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">2</div>
+            <div class="ps-content">
+              <div class="ps-title">문장 분해 (Sentence Decomposition)</div>
+              <div class="ps-desc">복합문을 논리적 최소 의미 단위로 분할. 분할 기준: 접속사('따라서','그러나','그런데','~이므로','~한 바' 등), 법령 인용 전후 분리. 유형 분류: 법리 문장·사실 문장·절차 문장·결론 문장</div>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">3</div>
+            <div class="ps-content">
+              <div class="ps-title">구성 요소 태깅 (Component Tagging)</div>
+              <div class="ps-desc">
+                각 의미 단위에 논리적 역할 태그 자동 부여<br><br>
+                <span class="tag tag-fact">PREMISE_FACT</span> 증거에 기초한 사실 인정 문장<br>
+                <span class="tag tag-law">PREMISE_LAW</span> 법령·판례를 인용하거나 법리를 선언하는 문장<br>
+                <span class="tag tag-infer">INFERENCE</span> 전제로부터 정당하게 도출되는 추론<br>
+                <span class="tag tag-conclusion">CONCLUSION</span> 최종 결론·판단·주문<br>
+                <span class="tag tag-invalid">INFERENCE_INVALID</span> 전제 없이 도출되거나 법률 외 개념에 근거한 부당 추론<br>
+                <span class="tag tag-meta">INFERENCE_METAPHOR</span> 비유적 표현을 법적 근거로 사용하는 추론
+              </div>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">4</div>
+            <div class="ps-content">
+              <div class="ps-title">인과관계 그래프 생성 (Causal Graph Generation)</div>
+              <div class="ps-desc">태깅된 의미 단위를 노드로, 인과관계를 방향 엣지로 구조화. OpenHash 타임스탬프 연동으로 논증 구조의 시간적 선후 검증 → 인과관계 역전 자동 탐지</div>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">5</div>
+            <div class="ps-content">
+              <div class="ps-title">법리 오류 탐지 (Legal Error Detection)</div>
+              <div class="ps-desc">
+                그래프 분석을 통해 9개 유형의 오류 자동 탐지
+                <div class="gov-table-wrap" style="margin-top:10px;">
+                  <table class="gov-table">
+                    <thead><tr><th>오류 유형</th><th>감점</th><th>탐지 방법</th></tr></thead>
+                    <tbody>
+                      <tr><td>순환 논증 (Circular Reasoning)</td><td>-5점</td><td>DFS 백엣지 탐지</td></tr>
+                      <tr><td>자기실현적 예언 (Self-Fulfilling Prophecy)</td><td>-5점</td><td>권리 노드 경로 분석</td></tr>
+                      <tr><td>인과관계 역전 (Reversal of Causality)</td><td>-4점</td><td>타임스탬프 비교</td></tr>
+                      <tr><td>법률 없는 권리 창설</td><td>-10점</td><td>법령 DB 조회</td></tr>
+                      <tr><td>허위 딜레마 (False Dilemma)</td><td>-3점</td><td>선택지 분석</td></tr>
+                      <tr><td>구성주의 오류 (Composition Fallacy)</td><td>-3점</td><td>양화사 분석</td></tr>
+                      <tr><td>형식적 오류 (Formal Fallacy)</td><td>-4점</td><td>삼단논법 검증</td></tr>
+                      <tr><td>귀납적 오류 (Inductive Fallacy)</td><td>-3점</td><td>증거 범위 비교</td></tr>
+                      <tr><td>은유적 오류 (Metaphorical Fallacy)</td><td>-2점</td><td>METAPHOR 태그 처리</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>4.7 연구 설계의 한계</h3>
+        <div class="warn-box">
+          본 연구는 단일 사례 연구(N=1)이다. 탐색적(exploratory) 성격을 지니며, 결과의 광범위한 일반화는 허용되지 않는다. 판결문 문장 분해 및 법리 오류 탐지 파이프라인의 정확도는 대규모 표본에서 추가 검증되어야 한다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5. 결과 ===== -->
+  <section class="section" id="results">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>결과</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="subsection">
+        <h3>5.1 OpenHash 증거 무결성 검증 결과</h3>
+        <p>원고 측 12개 항목, 피고 측 12개 항목, 총 24개 증거 항목 전부의 무결성이 항목당 평균 <strong>4.2ms</strong>의 검증 시간으로 확인되었다.</p>
+        <div class="finding-cards">
+          <div class="finding-card">
+            <div class="fc-num">주목할 발견 1</div>
+            <p>피고의 퇴거 압박 소통 기록: 파산선고 이전인 2022년 5월부터 퇴거 요구가 시작됨이 타임스탬프로 확인</p>
+          </div>
+          <div class="finding-card">
+            <div class="fc-num">주목할 발견 2</div>
+            <p>증거 진정성에 관한 다툼: <strong>0건</strong> — OpenHash 기반 증거 무결성 보장이 분쟁을 사실 다툼에서 법리 논쟁으로 신속하게 이동시키는 효과를 실증</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>5.2 법리 완전성 검토 결과</h3>
+        <div class="score-cards">
+          <div class="score-card"><div class="sc-label">I. 공정성</div><div class="sc-value">94</div><div class="sc-max">/100점</div></div>
+          <div class="score-card"><div class="sc-label">II. 객관성</div><div class="sc-value">90</div><div class="sc-max">/100점</div></div>
+          <div class="score-card"><div class="sc-label">III. 합리성</div><div class="sc-value">92</div><div class="sc-max">/100점</div></div>
+          <div class="score-card"><div class="sc-label">IV. 사실정확성</div><div class="sc-value">91</div><div class="sc-max">/100점</div></div>
+          <div class="score-card"><div class="sc-label">V. 법적정당성</div><div class="sc-value">93</div><div class="sc-max">/100점</div></div>
+          <div class="score-card highlight"><div class="sc-label">종합 평균</div><div class="sc-value">92</div><div class="sc-max">등급 A</div></div>
+        </div>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>분류</th><th>점수</th><th>만점</th></tr></thead>
+            <tbody>
+              <tr><td>법리적 완성도</td><td><strong>55.2</strong></td><td>60점</td></tr>
+              <tr><td>절차적 정당성</td><td><strong>36.8</strong></td><td>40점</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">※ 이 수치는 K-OpenLaw 연구그룹의 1차 측정값이며, 탐색적 데이터로 해석되어야 한다. 제3의 독립 법학자 집단에 의한 블라인드 교차 평가 결과는 후속 논문에서 보고된다.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>5.5 판결문 문장 분해 및 법리 오류 자동 식별 결과 <span style="font-size:11px;background:#fee2e2;color:#7f1d1d;padding:2px 8px;border-radius:10px;font-weight:700;vertical-align:middle;margin-left:6px;">신설</span></h3>
+        <p>실제 원심 판결문(광주고법(제주) 2025나10208, 항소심)의 핵심 문장 4개(P1~P4)에 5단계 파이프라인을 적용한 결과를 보고한다.</p>
+
+        <h4>5.5.1 입력 문장 (원심 판결문 발췌)</h4>
+        <div class="judgment-quote">
+          <span class="jq-id">P1 (5쪽)</span>
+          임대인의 임대차보증금반환채무는 장래에 실현되거나 도래할 것이 확실한 임대차계약의 종료시점에 발생하고, 임차인의 건물인도의무와 동시이행관계에 있으므로 채무자회생법 제417조가 정한 '기한부나 조건부 또는 장래의 청구권에 관한 것'에 해당한다.
+        </div>
+        <div class="judgment-quote">
+          <span class="jq-id">P2 (5쪽)</span>
+          파산채권자가 상계권보다 강한 담보적 효력을 가지는 공제권을 행사함에 있어서도 마찬가지의 법리가 적용된다고 봄이 타당하다.
+        </div>
+        <div class="judgment-quote">
+          <span class="jq-id">P3 (5쪽)</span>
+          피고는 미지급관리비 채권을 파산절차에 의하지 아니하고, 피고의 원고에 대한 임대차보증금반환채무에서 공제할 수 있다.
+        </div>
+        <div class="judgment-quote">
+          <span class="jq-id">P4 (6쪽)</span>
+          원고의 미지급 관리비 등 채무 중 파산채권에 해당하는 부분은 면책결정 확정 전인 2023. 3. 30. 이미 공제로 소멸하였으므로, 면책 대상에 포함되지 아니한다.
+        </div>
+
+        <h4>5.5.3 구성 요소 태깅 결과</h4>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>ID</th><th>내용 요약</th><th>태그</th></tr></thead>
+            <tbody>
+              <tr><td>P1-S1</td><td>장래 실현 확실</td><td><span class="tag tag-fact">PREMISE_FACT</span></td></tr>
+              <tr><td>P1-S2</td><td>동시이행관계</td><td><span class="tag tag-law">PREMISE_LAW</span></td></tr>
+              <tr><td>P1-S3</td><td>제417조 해당</td><td><span class="tag tag-conclusion">CONCLUSION</span></td></tr>
+              <tr><td>P2-S1</td><td>상계권 존재</td><td><span class="tag tag-law">PREMISE_LAW</span></td></tr>
+              <tr><td>P2-S2</td><td>공제권 = 상계권보다 강한 권리 창설</td><td><span class="tag tag-invalid">INFERENCE_INVALID ★</span></td></tr>
+              <tr><td>P3-S1</td><td>파산채권에 속함</td><td><span class="tag tag-law">PREMISE_LAW</span></td></tr>
+              <tr><td>P3-S2</td><td>파산절차 외 개별 공제 가능</td><td><span class="tag tag-invalid">INFERENCE_INVALID ★</span></td></tr>
+              <tr><td>P4-S1</td><td>면책결정 확정 전 공제</td><td><span class="tag tag-fact">PREMISE_FACT</span></td></tr>
+              <tr><td>P4-S2</td><td>따라서 면책 제외</td><td><span class="tag tag-infer">INFERENCE ★</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">★ = 오류 탐지 트리거</p>
+
+        <h4>5.5.4 인과관계 그래프 및 순환 구조 탐지</h4>
+        <div class="cycle-graph">
+          <span class="cg-node">P1-S3 (장래 청구권 존재 인정)</span>
+          <span class="cg-arrow">↓</span>
+          <span class="cg-node invalid">P2-S2 (공제권 = 법률 외 창설 권리 → 장래 청구권에 기반) <span class="tag tag-invalid">INFERENCE_INVALID</span></span>
+          <span class="cg-arrow">↓</span>
+          <span class="cg-node invalid">P3-S2 (파산절차 없이 개별 공제 허용) <span class="tag tag-invalid">INFERENCE_INVALID</span></span>
+          <span class="cg-arrow">↓</span>
+          <span class="cg-node">P4-S2 (공제로 채권 소멸 → 면책 제외)</span>
+          <span class="cg-arrow">↓</span>
+          <span class="cg-node" style="border-color:#888;color:#888;">[공제권 정당화를 위해 P1-S3 재참조]</span>
+          <span class="cg-arrow cycle">↺ P1-S3 ←──────── (순환)</span>
+          <div class="cg-cycle-note">
+            <strong>★ DFS 분석: 5노드 순환 구조 탐지</strong><br>
+            P1-S3 → P2-S2 → P3-S2 → P4-S2 → P1-S3
+          </div>
+        </div>
+
+        <h4>5.5.5 법리 오류 탐지 결과</h4>
+        <div class="error-cards">
+          <div class="error-card">
+            <div>
+              <div class="ec-title">법률 없는 권리 창설</div>
+              <div class="ec-desc">"상계권보다 강한 공제권" — 어떠한 실정 법률에도 근거가 없는 개념</div>
+              <div class="ec-where">위치: P2-S2</div>
+            </div>
+            <div class="error-score">-10점</div>
+          </div>
+          <div class="error-card">
+            <div>
+              <div class="ec-title">변론주의 위반 (법리)</div>
+              <div class="ec-desc">파산채권 개별행사금지 원칙, 채무자회생법 제424조 위반</div>
+              <div class="ec-where">위치: P3-S2 / 영역 I 감산</div>
+            </div>
+            <div class="error-score">-10점</div>
+          </div>
+          <div class="error-card">
+            <div>
+              <div class="ec-title">순환 논증 (5노드 순환)</div>
+              <div class="ec-desc">P1-S3 → P2-S2 → P3-S2 → P4-S2 → P1-S3</div>
+              <div class="ec-where">위치: P1~P4 / 영역 III 감산</div>
+            </div>
+            <div class="error-score">-5점</div>
+          </div>
+          <div class="error-card">
+            <div>
+              <div class="ec-title">자기실현적 예언</div>
+              <div class="ec-desc">공제행사 → 퇴거 → 청구권현실화 → 공제정당화 → 순환</div>
+              <div class="ec-where">위치: P2~P4 / 영역 III 감산</div>
+            </div>
+            <div class="error-score">-5점</div>
+          </div>
+          <div class="error-card">
+            <div>
+              <div class="ec-title">인과관계 역전</div>
+              <div class="ec-desc">면책소급효는 파산선고일로 소급, 공제 시점과 무관</div>
+              <div class="ec-where">위치: P4-S2 / 영역 III 감산</div>
+            </div>
+            <div class="error-score">-4점</div>
+          </div>
+        </div>
+        <div class="error-total">
+          <span>합계 감산</span>
+          <span>-34점</span>
+        </div>
+        <div class="info-box" style="margin-top:12px;">
+          <strong>기술적 의의:</strong> 법률 전문가가 수십 분에서 수시간에 걸쳐 수작업으로 발견해야 할 5개의 법리 오류를, 5단계 파이프라인은 문장 분해부터 오류 탐지까지 자동으로 처리한다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 6. 논의 ===== -->
+  <section class="section" id="discussion">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>논의</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="subsection">
+        <h3>6.1 법조계와의 상호 보완적 관계 설계</h3>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>현행 법조인의 역할</th><th>고팡 플랫폼의 보조 역할</th></tr></thead>
+            <tbody>
+              <tr><td>법원의 최종 판결 (유지)</td><td>소송 이전 법리 기준점 제공</td></tr>
+              <tr><td>전문 법률 상담 (유지)</td><td>AI 비서의 위험 인지 안내</td></tr>
+              <tr><td>소송 대리 (유지)</td><td>분쟁 당사자 자율 합의 지원</td></tr>
+              <tr><td>복잡한 법리 해석 (유지)</td><td>전수 법령 검토 보조 자료 제공</td></tr>
+              <tr><td>사법 정의 실현 (유지)</td><td>예방 법학으로 분쟁 수 감소</td></tr>
+              <tr><td>판결 품질 유지 (유지)</td><td>법리 오류 자동 탐지로 학술 기여</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>6.5 잠재적 위험과 안전장치</h3>
+        <div class="risk-list">
+          <div class="risk-item">
+            <div class="risk-title">위험 1: AI 법리 검토 결과에 대한 과도한 의존</div>
+            <div class="risk-response">모든 법리 검토 결과는 "참고 자료"임을 명시하고, 중요한 결정 전에 반드시 전문 법조인의 상담을 권고하는 안내를 의무화함.</div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-title">위험 2: 알고리즘 편향 가능성</div>
+            <div class="risk-response">이종 LLM 교차 검증, 제3 법학자 집단 독립 검증, 판결 근거 완전 공개.</div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-title">위험 3: 파이프라인 오탐(False Positive) 가능성</div>
+            <div class="risk-response">파이프라인의 탐지 결과는 "오류 의심" 수준으로만 제시하며, 최종 판단은 반드시 법학 전문가가 수행하도록 한다. 대규모 표본 검증을 통해 정밀도(Precision)와 재현율(Recall)을 측정한다.</div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-title">위험 4: 법적 효력에 대한 오해</div>
+            <div class="risk-response">고팡의 법리 검토 결과 및 파이프라인 탐지 결과는 어떠한 법적 효력도 없는 참고 자료임을 사용자 약관과 인터페이스에 명확히 고지함.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 7. 결론 ===== -->
+  <section class="section" id="conclusion">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>결론</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="subsection">
+        <h3>7.1 연구 요약 — 핵심 기여</h3>
+        <div class="contribution-list">
+          <div class="contribution-item">
+            <h4>기여 1 — 이종 LLM 법리 완전성 독립 검증 구조의 설계</h4>
+            <p>AI 시스템의 법리 검토 능력을 개발팀이 아닌 제3의 독립 법학자 집단이 블라인드 방식으로 평가하는 최초의 검증 구조를 설계하였다. 이종 LLM 법리 완전성 지표 92점(A)은 탐색적 데이터로서, 독립 검증을 통한 확인이 필수적이다.</p>
+          </div>
+          <div class="contribution-item">
+            <h4>기여 2 — OpenHash 기반 사실 확인 1초 이내의 실현</h4>
+            <p>OpenHash 분산원장으로 사전 등록된 증거는 평균 4.2ms의 해시 검증으로 진정성이 확인된다. 이는 분쟁을 사실 다툼에서 법리 논쟁으로 신속하게 이동시키고, 분쟁의 조기 해소를 촉진한다.</p>
+          </div>
+          <div class="contribution-item">
+            <h4>기여 3 — 법조계와의 상호 보완적 예방 법학 플랫폼의 제안</h4>
+            <p>고팡 플랫폼은 법원을 대체하거나 법조인과 경쟁하지 않는다. 소송 이전 단계에서 시민이 법리의 기준점을 파악하고 자발적으로 분쟁을 해소하도록 돕는 예방 법학 도구로 기능한다.</p>
+          </div>
+          <div class="contribution-item new">
+            <h4>기여 4 — 판결문 문장 분해 및 법리 오류 자동 식별 파이프라인 (신설)</h4>
+            <p>판결문의 복합문을 의미 단위로 분해하고(2단계), 논리 구성 요소를 태깅하며(3단계), 인과관계 그래프를 생성하여(4단계), 9개 유형의 법리 오류를 자동 탐지하는(5단계) 파이프라인을 제안하였다. 실제 원심 판결문(광주고법(제주) 2025나10208) P1~P4에서 5개 법리 오류(-34점)를 자동 탐지하여 기술적 효과를 실증하였다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>7.2 향후 연구 과제</h3>
+        <div class="task-list">
+          <div class="task-item">
+            <span class="task-badge">과제 1</span>
+            <div class="task-text">
+              <h4>제3 법학자 집단 블라인드 교차 평가 완료</h4>
+              <p>이종 LLM 법리 완전성 지표(92점)를 독립 법학자 집단이 검증. 평가자 간 신뢰도(Cohen's κ ≥ 0.61) 기준 적용.</p>
+            </div>
+          </div>
+          <div class="task-item">
+            <span class="task-badge">과제 2</span>
+            <div class="task-text">
+              <h4>대규모 판결문 표본 검증</h4>
+              <p>법원 공개 판결문을 활용하여 사건 유형별 층화 표본에서 이종 LLM의 법리 완전성을 검증하는 대규모 후속 연구.</p>
+            </div>
+          </div>
+          <div class="task-item">
+            <span class="task-badge">과제 3</span>
+            <div class="task-text">
+              <h4>분쟁 예방 효과 측정</h4>
+              <p>고팡 플랫폼 도입 전후, 이용 사용자와 미이용 사용자 간 분쟁 발생률 및 소송 진입률을 비교하는 종단 연구.</p>
+            </div>
+          </div>
+          <div class="task-item">
+            <span class="task-badge">과제 4</span>
+            <div class="task-text">
+              <h4>법적 효력 명확화</h4>
+              <p>OpenHash 등록 증거의 법적 효력과 이종 LLM 법리 검토 보고서의 법적 위상을 현행 법체계 내에서 명확히 하는 법학적 연구.</p>
+            </div>
+          </div>
+          <div class="task-item">
+            <span class="task-badge">과제 5</span>
+            <div class="task-text">
+              <h4>분야 LLM 특화 개발</h4>
+              <p>헌법, 형법, 상법, 민법, 특별법 각 분야에 최적화된 fine-tuning 모델 개발과 성능 평가.</p>
+            </div>
+          </div>
+          <div class="task-item">
+            <span class="task-badge">과제 6</span>
+            <div class="task-text">
+              <h4>국제 적용 가능성 탐구</h4>
+              <p>OpenHash의 다계층 구조를 활용한 국제 분쟁 해결 적용 가능성.</p>
+            </div>
+          </div>
+          <div class="task-item">
+            <span class="task-badge">과제 7</span>
+            <div class="task-text">
+              <h4>취약계층 사법 접근성 측정</h4>
+              <p>고팡 플랫폼이 경제적 취약계층의 법적 자기결정 역량 강화에 미치는 영향을 정량적으로 측정하는 연구.</p>
+            </div>
+          </div>
+          <div class="task-item">
+            <span class="task-badge new">과제 8</span>
+            <div class="task-text">
+              <h4>파이프라인 정밀도·재현율 측정 (신설)</h4>
+              <p>판결문 법리 오류 자동 식별 파이프라인을 대규모 판결문 표본에 적용하여, 법리 오류 유형별 정밀도(Precision)와 재현율(Recall)을 측정하고, 오탐(False Positive) 및 탐지 누락(False Negative) 패턴을 분석하여 파이프라인의 정확도를 개선하는 연구.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>7.3 최종 결론</h3>
+        <div class="info-box">
+          <p>법원은 민주주의 사회의 근간이다. 법원의 판결은 사회 구성원 모두가 신뢰할 수 있는 분쟁 해결의 최종 권위이다. 본 연구는 이 권위를 존중하면서, 법원에 도달하기 이전 단계에서 분쟁을 예방하고 줄이는 방법을 탐구하였다.</p>
+          <p style="margin-top:8px;">이종 LLM의 법리 완전성이 독립적으로 검증되고, OpenHash가 1초 이내 사실 확인을 실현하며, 판결문 법리 오류 자동 식별 파이프라인이 시민이 판결의 논리 구조를 이해하도록 돕는다면, 많은 분쟁은 소송으로 진화하기 전에 해소될 수 있다. 그리고 법원은 진정으로 법적 판단이 필요한 사건에 집중할 수 있게 된다.</p>
+          <p style="margin-top:8px;">이것이 고팡 예방 법학 플랫폼이 추구하는 미래이다. 법원과 기술이 경쟁하는 것이 아니라, 각자의 역할을 수행하면서 더 많은 시민이 더 나은 법적 환경에서 살아가도록 협력하는 것이다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 참고문헌 ===== -->
+  <section class="section" id="references">
+    <div class="section-header">
+      <div class="section-num">참</div>
+      <h2>참고문헌 (References)</h2>
+    </div>
+    <div class="section-body">
+      <p class="note" style="margin-bottom:16px;">검증일: 2026년 3월 22일 &nbsp;|&nbsp; ✅ 실재 확인 &nbsp;|&nbsp; ⚠️ 서지사항 수정</p>
+      <div class="ref-list">
+        <div class="ref-item"><span class="ref-status">✅</span><span>Barton, B.H., &amp; Bibas, S. (2017). <em>Rebooting Justice: More Technology, Fewer Lawyers, and the Future of Law.</em> New York: Encounter Books. ISBN: 9781594039331.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>Brown, L.M. (1950). <em>Manual of Preventive Law: How to Prevent Legal Difficulties in the Handling of Everyday Business Problems.</em> New York: Prentice-Hall.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>Brown, L.M., &amp; Dauer, E.A. (1978). <em>Planning by Lawyers: Materials on a Nonadversarial Legal Process.</em> Mineola, NY: Foundation Press.</span></div>
+        <div class="ref-item"><span class="ref-status">⚠️</span><span>Chen, G., Fan, L., Gong, Z., Xie, N., Li, Z., Liu, Z., Li, C., Qu, Q., Alinejad-Rokny, H., Ni, S., &amp; Yang, M. (2025). AgentCourt: Simulating Court with Adversarial Evolvable Lawyer Agents. In <em>Findings of the ACL: ACL 2025</em> (pp. 5850–5865). Vienna: ACL. arXiv:2408.08089.</span></div>
+        <div class="ref-item"><span class="ref-status">⚠️</span><span>Cui, J., Li, Z., Yan, Y., Chen, B., &amp; Yuan, L. (2023). ChatLaw: Open-Source Legal Large Language Model with Integrated External Knowledge Bases. arXiv:2306.16092.</span></div>
+        <div class="ref-item"><span class="ref-status">⚠️</span><span>He, Z., Cao, P., Wang, C., Jin, Z., Chen, Y., Xu, J., Li, H., Liu, K., &amp; Zhao, J. (2024). AgentsCourt: Building Judicial Decision-Making Agents with Court Debate Simulation and Legal Knowledge Augmentation. In <em>Findings of the ACL: EMNLP 2024</em> (pp. 9399–9416). Miami: ACL. DOI: 10.18653/v1/2024.findings-emnlp.549.</span></div>
+        <div class="ref-item"><span class="ref-status">⚠️</span><span>Jiang, C., &amp; Yang, X. (2024). Agents on the Bench: Large Language Model Based Multi Agent Framework for Trustworthy Digital Justice. arXiv:2412.18697.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>Katsh, E., &amp; Rifkin, J. (2001). <em>Online Dispute Resolution: Resolving Conflicts in Cyberspace.</em> San Francisco: Jossey-Bass. ISBN: 9780787956769.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>K-OpenLaw 연구그룹 (2026a). 이종 LLM 기반 자율 분쟁 해결 시스템 K-OpenLaw의 실증적 연구. 논문 초안 v3.5. AI City Inc.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>K-OpenLaw 연구그룹 (2026b). AI 가상 판결 품질 평가 방법론 v2.1. AI City Inc.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>Rule, C. (2002). <em>Online Dispute Resolution for Business.</em> San Francisco: Jossey-Bass.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>Sourdin, T. (2018). Judge v Robot? Artificial Intelligence and Judicial Decision-Making. <em>UNSW Law Journal, 41</em>(4), 1114–1133. DOI: 10.53637/ZGUX2213.</span></div>
+        <div class="ref-item"><span class="ref-status">⚠️</span><span>Zeleznikow, J. (2021). Using Artificial Intelligence to provide Intelligent Dispute Resolution Support. <em>Group Decision and Negotiation, 30</em>(4), 789–812. DOI: 10.1007/s10726-021-09734-1.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>법원행정처 (2024). <em>2024년 사법연감.</em> 대한민국 법원.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>특허출원 제10-2026-0018910호. (2026). 거래의 지역성을 활용한 행정구역 기반 샤딩 및 계층적 무결성 검증 시스템 (OpenHash).</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>특허출원 제10-2026-0039504호. (2026). K-OpenLaw 자율 분쟁 해결 시스템.</span></div>
+        <div class="ref-item"><span class="ref-status">✅</span><span>특허출원 제10-2026-XXXXXX호. (2026). 판결문 문장 분해 및 법리 오류 자동 식별 방법과 이를 이용한 AI 판결 품질 평가 시스템. [출원 진행 중]</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 부록 ===== -->
+  <section class="section" id="appendix">
+    <div class="section-header">
+      <div class="section-num">부</div>
+      <h2>부록 (Appendix)</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="subsection">
+        <h3>부록 A — 고팡 예방 법학 플랫폼과 국가 사법 체제 비교</h3>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>비교 항목</th><th>국가 사법 체제</th><th>고팡 예방 법학 플랫폼</th></tr></thead>
+            <tbody>
+              <tr><td>역할</td><td>분쟁의 최종 법적 해결 (사법 권위)</td><td>분쟁의 사전 예방·조기 해소 지원 (보조 도구)</td></tr>
+              <tr><td>법적 효력</td><td>구속력 있는 판결</td><td>참고용 법리 검토 자료</td></tr>
+              <tr><td>이용 방식</td><td>당사자 신청 필수</td><td>시민 자율 선택</td></tr>
+              <tr><td>작동 시점</td><td>분쟁 발생 후</td><td>분쟁 발생 전·초기</td></tr>
+              <tr><td>사실 확인</td><td>수주~수개월</td><td>1초 이내 (OpenHash)</td></tr>
+              <tr><td>비용</td><td>수천만~수억 원</td><td>대폭 절감</td></tr>
+              <tr><td>법령 검토</td><td>판사 재량·지식 의존</td><td>전 법령 전수 검토 (참고)</td></tr>
+              <tr><td>독립 검증</td><td>항소·상고 심급</td><td>제3 법학자 집단 검증</td></tr>
+              <tr><td>오류 탐지 도구</td><td>법률 전문가 수작업</td><td>5단계 파이프라인 자동화</td></tr>
+              <tr><td colspan="3" style="text-align:center;font-weight:700;color:var(--primary);">─────── 상호 보완적 파트너 ───────</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>부록 B — OpenHash 증거 항목 수별 검증 시간 추정</h3>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>증거 항목 수</th><th>총 검증 시간</th><th>1초 이내 여부</th></tr></thead>
+            <tbody>
+              <tr><td>24개 (실측)</td><td>~100ms (0.1초)</td><td>✅ 1초 이내</td></tr>
+              <tr><td>50개</td><td>~210ms (0.2초)</td><td>✅ 1초 이내</td></tr>
+              <tr><td>100개</td><td>~420ms (0.4초)</td><td>✅ 1초 이내</td></tr>
+              <tr><td>200개</td><td>~840ms (0.8초)</td><td>✅ 1초 이내</td></tr>
+              <tr><td>240개</td><td>~1,008ms (1.0초)</td><td>⚠️ 1초 경계</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">※ AWS VPC 환경 실측값. WAN 환경에서는 별도 검증 필요.</p>
+      </div>
+
+      <div class="subsection">
+        <h3>부록 C — 6단계 규범 위계 데이터베이스 구조</h3>
+        <div class="arch-layers">
+          <div class="arch-layer"><div class="arch-layer-title">Level 1 — 헌법 (최상위)</div><div class="arch-layer-body">모든 법령의 최상위 규범. 위반 시 즉각 위헌 판정 트리거.</div></div>
+          <div class="arch-layer"><div class="arch-layer-title">Level 2 — 국제조약·협약</div><div class="arch-layer-body">헌법에 준하는 효력의 비준 조약.</div></div>
+          <div class="arch-layer"><div class="arch-layer-title">Level 3 — 특별법 (채무자회생법, 임대차보호법 등)</div><div class="arch-layer-body">일반법에 우선 적용.</div></div>
+          <div class="arch-layer"><div class="arch-layer-title">Level 4 — 일반법 (민법, 상법, 형법 등)</div><div class="arch-layer-body">기본 법률 체계.</div></div>
+          <div class="arch-layer"><div class="arch-layer-title">Level 5 — 시행령·시행규칙</div><div class="arch-layer-body">법률의 위임에 따른 하위 규범.</div></div>
+          <div class="arch-layer"><div class="arch-layer-title">Level 6 — 판례 (대법원·헌법재판소)</div><div class="arch-layer-body">법원 해석 기준. 규칙: 상위 Level이 하위 Level보다 항상 우선 적용. 위반 시: 규범역전 트리거 발동 → 경고 누적 → 재검토.</div></div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3>부록 E — 판결문 법리 오류 자동 식별 파이프라인 — 9개 오류 유형 요약</h3>
+        <div class="gov-table-wrap">
+          <table class="gov-table">
+            <thead><tr><th>오류 유형</th><th>감점</th><th>핵심 탐지 방법</th></tr></thead>
+            <tbody>
+              <tr><td>순환 논증 (Circular Reasoning)</td><td>-5점</td><td>DFS 백엣지 탐지</td></tr>
+              <tr><td>자기실현적 예언 (Self-Fulfilling Prophecy)</td><td>-5점</td><td>권리노드 경로 분석</td></tr>
+              <tr><td>인과관계 역전 (Reversal of Causality)</td><td>-4점</td><td>타임스탬프 비교</td></tr>
+              <tr><td>법률 없는 권리 창설</td><td>-10점</td><td>법령 DB 조회</td></tr>
+              <tr><td>허위 딜레마 (False Dilemma)</td><td>-3점</td><td>선택지 분석</td></tr>
+              <tr><td>구성주의 오류 (Composition Fallacy)</td><td>-3점</td><td>양화사 패턴 분석</td></tr>
+              <tr><td>형식적 오류 (Formal Fallacy)</td><td>-4점</td><td>삼단논법 형식 검증</td></tr>
+              <tr><td>귀납적 오류 (Inductive Fallacy)</td><td>-3점</td><td>증거-결론 범위 비교</td></tr>
+              <tr><td>은유적 오류 (Metaphorical Fallacy)</td><td>-2점</td><td>METAPHOR 태그 처리</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- 푸터 -->
+<footer class="gov-footer">
+  <div class="gov-footer-inner">
+    <div class="gov-footer-top">
+      <div>
+        <h4>K-OpenLaw 연구그룹</h4>
+        <p>AI City Inc. | 법률 AI 및 예방 법학 연구</p>
+        <p>논문 버전: v3.0 | 최종 수정일: 2026. 3. 22.</p>
+      </div>
+      <div>
+        <h4>관련 특허출원</h4>
+        <p>제10-2026-0018910호 (OpenHash)</p>
+        <p>제10-2026-0039504호 (K-OpenLaw)</p>
+        <p>제10-2026-XXXXXX호 (파이프라인)</p>
+      </div>
+    </div>
+    <p class="footer-disclaimer">
+      본 논문의 모든 법리 검토 결과 및 파이프라인 탐지 결과는 어떠한 법적 효력도 없는 참고 자료입니다. 
+      법적 판단이 필요한 경우 반드시 자격을 갖춘 법률 전문가의 조언을 구하시기 바랍니다. 
+      본 연구는 국가 사법 체제를 대체하거나 법원·법조인의 역할을 축소하는 것을 목표로 하지 않습니다.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
