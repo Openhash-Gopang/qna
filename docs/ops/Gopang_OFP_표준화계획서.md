@@ -348,7 +348,7 @@ Content-Type: application/json
     "reasoning": "임대차보호법 제3조에 따라...",
     "disclaimer": "본 결과는 법률 정보 제공 목적이며 법률 자문이 아닙니다."
   },
-  "attribution": "K-Law v15.1 · Gopang AI · klaw.openhash.kr",
+  "attribution": "K-Law v15.1 · Gopang AI · klaw.hondi.net",
   "usage": {
     "tokens_used": 1240,
     "calls_remaining": 9

@@ -12,7 +12,7 @@
 | 차별점 | **"나 혼자서도 즉시 유용"** — 친구 없이도 법률·응급·보험·민주주의 참여 가능 |
 | 서브시스템 | 14개 (K-Law, K-119, K-Police, K-Health, K-Insurance, K-Traffic, K-Logistics, K-Tax, GDC, K-Market, K-School, K-Public, K-Stock, K-Democracy) |
 | 사용자 비용 | 월 평균 100원 |
-| 첫 실행 | `klaw.openhash.kr` 링크 이메일 47건 발송 |
+| 첫 실행 | `klaw.hondi.net` 링크 이메일 47건 발송 |
 | 파일럿 지역 | 제주도 |
 
 ---
@@ -20,7 +20,7 @@
 ## 1. 플랫폼 서브시스템 개요
 
 ### 1-1. K-Law — 판결 시뮬레이터
-**URL:** `klaw.openhash.kr`
+**URL:** `klaw.hondi.net`
 
 사건의 핵심 사실관계 입력 → AI가 대법원 판결 예측 (K-Law v15.1 방법론 적용)
 
@@ -470,7 +470,7 @@ Step 5 — PDV 기록     : 납세 이력 OpenHash 불변 앵커링
 
 ### 2-4. 바이럴 레이어 — AI 결과물이 광고가 된다
 
-- K-Law 판결문 하단: `"K-Law v15.1 · Gopang AI가 작성 — klaw.openhash.kr"`
+- K-Law 판결문 하단: `"K-Law v15.1 · Gopang AI가 작성 — klaw.hondi.net"`
 - K-Insurance 보험료 비교표 하단: `"K-Insurance · gopang.net/insurance"`
 - K-Democracy 법안 초안 하단: `"K-Democracy AI 숙의 파이프라인 · democracy.gopang.net"`
 
@@ -541,7 +541,7 @@ Step 5 — PDV 기록     : 납세 이력 OpenHash 불변 앵커링
 | 대상 | 강조 포인트 | 연결 서비스 |
 |---|---|---|
 | 블록체인/보안 교수 (35명) | OpenHash 합의 알고리즘 차별점 + 공동 논문 제안 | gopang.net + GitHub |
-| 법률AI/거버넌스 교수 (8명) | K-Law v15.1 판결 예측 정확도 검증 협력 | klaw.openhash.kr |
+| 법률AI/거버넌스 교수 (8명) | K-Law v15.1 판결 예측 정확도 검증 협력 | klaw.hondi.net |
 | KISA · ETRI | 블록체인 기술 검증 PoC 공동 제안 | OpenHash + K-119 |
 | 한국은행 · 금융감독원 | GDC CBDC 연구 연계, K-Insurance 정책 협력 | K-Insurance |
 | 카카오(그라운드X) · 라인플러스 | GWP 블록체인 API 연동, 공동 인프라 활용 | gopang-proxy |
@@ -553,7 +553,7 @@ Step 5 — PDV 기록     : 납세 이력 OpenHash 불변 앵커링
 제목: [OpenHash 실증실험] K-Law 판결 AI · K-119 응급출동 — 귀 연구실 협력 요청
 
 ① 핵심 1문장: "사건 개요 한 줄로 대법원 판결을 예측하는 AI를 무료로 체험해보세요."
-② 직접 체험 링크: klaw.openhash.kr (클릭 즉시 사용, 회원가입 불필요)
+② 직접 체험 링크: klaw.hondi.net (클릭 즉시 사용, 회원가입 불필요)
 ③ 공동연구 제안: 판결 정확도 데이터 공동 분석 / 논문 공동 저자 제안
 ④ CTA: "2주 내 간략한 피드백 부탁드립니다."
 ```
@@ -564,7 +564,7 @@ Step 5 — PDV 기록     : 납세 이력 OpenHash 불변 앵커링
 
 | 시기 | Phase | 실행 내용 |
 |---|---|---|
-| Week 1 | Phase 0 | 이메일 47건 발송 · klaw.openhash.kr 랜딩 최적화 |
+| Week 1 | Phase 0 | 이메일 47건 발송 · klaw.hondi.net 랜딩 최적화 |
 | Week 2~4 | Phase 1 | 회신 기관 화상 미팅 · GitHub Star 30+ 목표 |
 | Month 2 | Phase 2 | K-Law 판결 100건 · K-119 제주 500명 · PDV 10명 |
 | Month 3 | Phase 3 | 법무법인 K-Law Pro 계약 1건 · KIISC 논문 투고 |
@@ -623,7 +623,7 @@ Step 5 — PDV 기록     : 납세 이력 OpenHash 불변 앵커링
 
 ## 9. 결론
 
-> **지금 당장 실천 가능한 첫 번째 행동: `klaw.openhash.kr` 링크를 담은 이메일 47건 발송.**
+> **지금 당장 실천 가능한 첫 번째 행동: `klaw.hondi.net` 링크를 담은 이메일 47건 발송.**
 
 고팡의 사업화 핵심은 **이미 작동하는 14개 서브시스템**이다. 이 14개가 하나의 앱(고팡)으로 묶이는 순간, 경쟁자가 없다.
 
