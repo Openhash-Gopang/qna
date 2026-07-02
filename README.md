@@ -1,6 +1,6 @@
 # Gopang QnA
 
-Gopang 시스템 AI 지식 도우미 — qna.gopang.net
+Gopang 시스템 AI 지식 도우미 — qna.hondi.net
 
 ## 구조
 

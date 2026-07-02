@@ -194,7 +194,7 @@
 매주 수요일 11:00 — 참여: 팀 주피터 + 제주도청 담당관 + 소방서·경찰서·농협 관계자
 
 **실시간 공개 대시보드**  
-`gopang.net/jeju-dashboard` (공개): GDC 거래량 · K-119 출동 응답 시간 · 민원 처리 현황
+`hondi.net/jeju-dashboard` (공개): GDC 거래량 · K-119 출동 응답 시간 · 민원 처리 현황
 
 **사용자 인터뷰**  
 매주 금요일 제주시·서귀포시에서 랜덤 10명 대상 1:1 피드백 (음성 녹음 → AI 요약)
@@ -267,16 +267,16 @@ Phase 0~3 집중 실행 (Month 1~4)
 
 ## 10. 지금 당장 실천할 첫 번째 행동 (Week 1 체크리스트)
 
-- [ ] 이메일 47건 발송 — K-119(`911.gopang.net`) + K-Law(`klaw.hondi.net`) 체험 링크 포함
+- [ ] 이메일 47건 발송 — K-119(`911.hondi.net`) + K-Law(`klaw.hondi.net`) 체험 링크 포함
 - [ ] 제주도청 스마트시티과 간담회 제안 공문 발송 (2주 내 일정 확정 목표)
 - [ ] 제주관광공사·렌터카협회·소상공인연합회 접촉 리스트 작성
 - [ ] GDC 샌드박스 신청서 준비 (법무법인 검토 의뢰)
-- [ ] `gopang.net/jeju-dashboard` 공개 대시보드 초안 구성
+- [ ] `hondi.net/jeju-dashboard` 공개 대시보드 초안 구성
 - [ ] GitHub `Openhash-Gopang` 저장소 `Call for Collaborators` 제주 파일럿 공지 게시
 
 ---
 
-*문의: AI City Inc. / 팀 주피터 · gopang.net · github.com/Openhash-Gopang*  
+*문의: AI City Inc. / 팀 주피터 · hondi.net · github.com/Openhash-Gopang*  
 *DAWN: Democracy is All We Need*
 
 ---

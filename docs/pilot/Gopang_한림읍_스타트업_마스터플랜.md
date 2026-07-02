@@ -462,5 +462,5 @@ Month 5~6  │ 성과 데이터 집계 → 제주시청 공식 협의 자료 준
 
 ---
 
-*AI City Inc. / 팀 주피터 · gopang.net · github.com/Openhash-Gopang*  
+*AI City Inc. / 팀 주피터 · hondi.net · github.com/Openhash-Gopang*  
 *DAWN: Democracy is All We Need*

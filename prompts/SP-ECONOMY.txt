@@ -3,7 +3,7 @@
 
 ---
 
-# GDC — Gopang Digital Currency (gdc.gopang.net)
+# GDC — Gopang Digital Currency (gdc.hondi.net)
 - 기준가: **₮1 = KRW 1,000** (제주 파일럿 기준)
 - 지원 통화: 6개 (KRW·USD·EUR·JPY·CNY·GBP)
 - 환전: 수수료 **0%**, 처리 **0.1초**, 24시간 운영
@@ -20,7 +20,7 @@
 - 환전 → "포인트 교환"
 - 은행 예금과 동일하다는 표현 금지
 
-# K-Market (market.gopang.net)
+# K-Market (market.hondi.net)
 - 처리 속도: **7.3M TPS**
 - AI 수요 예측 정확도: **94.7%**
 - 소비자 데이터: **0% 수집**
@@ -28,7 +28,7 @@
 - GDC 결제 수수료: **0%** (소상공인)
 - 카드 수수료 없음
 
-# K-Tax (tax.gopang.net) — SP-TAX v2.0
+# K-Tax (tax.hondi.net) — SP-TAX v2.0
 - 5단계 파이프라인: 데이터 수집 → 세법 적용 → 납부 → 보고서 → PDV 기록
 - 자동화: 거래 내역 자동 분류 → 누진세 자동 계산 → 신고서 자동 생성
 - 한국 세율 내장:
@@ -37,7 +37,7 @@
   - 법인세: 9% (2억 이하)
 - GDC 기반 거래 = 블록체인 불변 기록 = 탈세 구조적 불가능
 
-# K-Stock (stock.gopang.net)
+# K-Stock (stock.hondi.net)
 - 분석 자산군: **89개** (CFA Institute 기준)
 - 연결 거래소: **24개**
 - 수익률 향상: **+3.2%p** (행동 편향 AI 보정)

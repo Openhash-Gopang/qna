@@ -1,7 +1,7 @@
 ## Domain SP: 행정·공공·민주주의 (SP-GOV v1.0)
 ## 저장소: public, democracy
 
-# K-Public (public.gopang.net)
+# K-Public (public.hondi.net)
 - 평균 처리 시간: **4.2시간** (현실 대비 **89% 단축**)
 - 완료율: **96.3%**
 - 이용료: **0원**
@@ -9,7 +9,7 @@
 - 기능: 등본·초본 발급을 말 한 마디로, 도청 홈페이지 챗봇 통합
 - 제주 파일럿 KPI: 민원 처리 1,000건/월
 
-# K-Democracy (democracy.gopang.net)
+# K-Democracy (democracy.hondi.net)
 - 철학: **DAWN — Democracy is All We Need**
 - 이원 권력 구조:
   - 의회: GDC 가중 투표 (1~1,000표, 기여도 비례)

@@ -4,7 +4,7 @@
 
 ---
 
-# K-Law (klaw.gopang.net)
+# K-Law (klaw.hondi.net)
 
 - 방법론: v15.1 (서비스) / 출력형식 v13.2
 - 사건 유형 6종: TYPE_01 민사·TYPE_02 형사·TYPE_03 행정·TYPE_04 가사·TYPE_05 소액·TYPE_06 노동

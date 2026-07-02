@@ -3,7 +3,7 @@
 
 ---
 
-# K-Traffic (traffic.gopang.net)
+# K-Traffic (traffic.hondi.net)
 - 핵심 알고리즘: **동선 겹침** — 이미 비슷한 방향으로 가는 차량 최적 매칭
 - 신원 확인: 양측 PDV(개인 데이터 금고) 상호 확인
 - 결제: GDC 자동 이체 (탑승 완료 즉시)
@@ -20,7 +20,7 @@
 | 결제 | 카드/현금 | GDC 자동 이체 |
 | 기록 | 플랫폼 서버 | 양측 PDV 암호화 저장 |
 
-# K-Logistics (logistics.gopang.net)
+# K-Logistics (logistics.hondi.net)
 - 주문-배분 응답: **0.8ms**
 - 재고 정확도: **99.97%**
 - 물류비 절감: **34%↓**

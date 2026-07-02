@@ -1,7 +1,7 @@
 ## Domain SP: 교육·직업·인재 (SP-EDU v1.0)
 ## 저장소: school
 
-# K-School (school.gopang.net)
+# K-School (school.hondi.net)
 - 과목: **166개** (UNESCO ISCED-F 2013 분류)
 - 언어: **26개**
 - 대상 국가: **193개국**

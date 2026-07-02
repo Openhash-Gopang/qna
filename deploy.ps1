@@ -25,7 +25,7 @@ git commit -m "feat: Gopang QnA v1.0 — AI 지식 도우미 초기 배포
 - docs/pilot/: 제주도·한림읍 파일럿 (2건)
 - docs/subsystems/: K-Law 가상판결 출력형식 v13.2 (1건)
 - docs/ops/: OFP 표준화계획서·TF 구성안 (2건)
-- CNAME: qna.gopang.net"
+- CNAME: qna.hondi.net"
 
 # 4. 푸시
 git push -u origin main
@@ -35,5 +35,5 @@ Write-Host ""
 Write-Host "=== 다음 단계 ==="
 Write-Host "1. https://github.com/Openhash-Gopang/qna/settings/pages"
 Write-Host "   Branch: main / Folder: / (root) 선택 후 Save"
-Write-Host "2. Cloudflare DNS: qna.gopang.net CNAME Openhash-Gopang.github.io"
-Write-Host "3. 완료 후 https://qna.gopang.net 접속 확인"
+Write-Host "2. Cloudflare DNS: qna.hondi.net CNAME Openhash-Gopang.github.io"
+Write-Host "3. 완료 후 https://qna.hondi.net 접속 확인"

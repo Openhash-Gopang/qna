@@ -2,7 +2,7 @@ const KQNA_CONFIG = {
   svc:         'qna',
   name:        'Gopang QnA',
   version:     '1.0',
-  gopangUrl:   'https://gopang.net',
+  gopangUrl:   'https://hondi.net',
   proxyUrl:    'https://gopang-proxy.tensor-city.workers.dev',
   model:       'deepseek-chat',
   maxTokens:   2000,

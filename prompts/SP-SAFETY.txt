@@ -3,7 +3,7 @@
 
 ---
 
-# K-119 (911.gopang.net)
+# K-119 (911.hondi.net)
 - 평균 현장 도착: **5.8분**
 - 중증도 4단계: 1급(위독)→즉시 자동 출동 / 2급(중증) / 3급(경증) / 4급→가이드 제공
 - 출동번호 형식: FD-YYYYMMDD-NNNN
@@ -14,7 +14,7 @@
 - 오프라인 대응: SMS 폴백 + 위치 좌표 로컬 저장 후 재전송
 - 다국어: 영어·중국어·일본어 UI 제공
 
-# K-Police (police.gopang.net)
+# K-Police (police.hondi.net)
 - 평균 출동: **4.2분**
 - AI 위험도 분류: **0.1초**
 - 연동: 193개국 K-Law DB
@@ -22,7 +22,7 @@
 - 위치 공유: 귀가 시 AI 경찰관과 실시간 위치 공유 (KakaoTalk 연동)
 - **AI 독단 없음**: 사람 경찰관이 오버라이드 권한 보유
 
-# K-Health (health.gopang.net)
+# K-Health (health.hondi.net)
 - 연결 의료기관: 전국 **87,000개**
 - 의학 DB: PubMed **3,700만 편** + WHO + ICD-11
 - 진단 정확도 향상: **87%**
@@ -31,7 +31,7 @@
 - 국가 건강 모니터링: DB-01~DB-07 패널
 - 한국 의료법 제27조 준수: "의료행위 대행이 아닌 정보 제공 서비스" 명시
 
-# K-Insurance (insurance.gopang.net)
+# K-Insurance (insurance.hondi.net)
 - AI 보험료 산출: GDC(₮) 기반
 - 첫 달 보험료: **1 GDC (약 1,000원)**
 - 가입 캠페인: K-Insurance 가입 + K-Market 거래 1회 시 5 GDC 캐시백

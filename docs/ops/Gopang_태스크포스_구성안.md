@@ -65,7 +65,7 @@
 | K-Public | 개발 완료 | 제주시청 챗봇 통합 API |
 | K-Traffic | 파일럿 준비 | 렌터카 QR 인증 모듈 |
 | GDC | 운용 중 | 환전 봇, POOL 잔고 모니터링 |
-| 공통 | — | `gopang.net/jeju-dashboard` 공개 대시보드 구축 |
+| 공통 | — | `hondi.net/jeju-dashboard` 공개 대시보드 구축 |
 
 **채용 전략:** GitHub `Openhash-Gopang` 오픈소스 기여자 중 선발 우선. 인턴·부트캠프 수료생 활용 가능(무급 기여 → 성과 후 유급 전환).
 
@@ -141,7 +141,7 @@
 
 ### C-1. KPI 모니터링 담당 (1명, A-3 겸직 가능)
 **주요 업무:**
-- `gopang.net/jeju-dashboard` 실시간 수치 관리
+- `hondi.net/jeju-dashboard` 실시간 수치 관리
 - 주간 KPI 리포트 작성 (DAU·GDC 거래량·K-119 출동·민원 처리)
 - Supabase 쿼리 자동화 (일/주/월 집계 스케줄러)
 - 이상 징후(KPI 급락·시스템 오류) 알림 설정
@@ -288,7 +288,7 @@ Phase 0 5인 + 아래 3명 추가:
 
 ---
 
-*문의: AI City Inc. / 팀 주피터 · gopang.net · github.com/Openhash-Gopang*  
+*문의: AI City Inc. / 팀 주피터 · hondi.net · github.com/Openhash-Gopang*  
 *DAWN: Democracy is All We Need*
 
 ---

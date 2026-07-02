@@ -33,7 +33,7 @@
 - 증거 패키지 JSON(94): PAA가 생성, OpenHash 해시 일치 여부 포함
 - 활용: K-Law 증거 제출 / K-Police 사건 기록 / K-Health 진료 기록 / PDV 로그
 
-# K-Security (security.gopang.net)
+# K-Security (security.hondi.net)
 - 아키텍처: **2단계 LLM 파이프라인**
   - 1단계: DeepSeek V3 스크리닝 (이상 점수 산출)
   - 2단계: 이상 점수 ≥ 0.6 → Claude Opus 심층 분석

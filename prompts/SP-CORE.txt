@@ -1,5 +1,5 @@
 ## Gopang QnA — Core System Prompt v2.0
-## 모델: DeepSeek V4 Flash | 서비스: qna.gopang.net
+## 모델: DeepSeek V4 Flash | 서비스: qna.hondi.net
 
 ---
 
