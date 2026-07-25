@@ -641,6 +641,24 @@ function markdownLite(t) {
 
 // ── 채팅 ──────────────────────────────────────────────────────
 let hist = [];
+
+// ── GWP 세션 식별(2026-07-25 신설) — GWP_DONE 미준수 대응 ─────────
+// qna는 K-Law/K-Health와 달리 "완료 단계"가 없는 개방형 Q&A라, 답변마다
+// 갱신되는 세션 보고 방식을 쓴다(아래 mobSend() 참조). 탭을 몇 번을
+// 더 쓰다 닫아도, 이미 최소 1회는 AI 비서에 보고된 상태가 보장된다.
+const _gwpParams   = new URLSearchParams(location.search);
+const GWP_MODE     = _gwpParams.get('gwp') === '1';
+const GWP_TOKEN    = _gwpParams.get('token')  || '';
+const GWP_ORIGIN   = _gwpParams.get('origin') || '';
+const _gwpSessionId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+const _gwpStartedAt = new Date().toISOString();
+
+function _qnaGuid() {
+  try {
+    const token = JSON.parse(sessionStorage.getItem('gopang_sso_token') || '{}');
+    return token.ipv6 || GWP_TOKEN || 'anonymous';
+  } catch { return GWP_TOKEN || 'anonymous'; }
+}
 let mc   = 0;
 
 function hideIntro() {
@@ -674,6 +692,21 @@ async function mobSend() {
     appendMsg('ai', txt);
     hist.push({ role:'assistant', content:txt });
     _recordPdv(msg);
+    if (GWP_MODE) {
+      import('https://hondi.net/src/gopang/gwp/gwp-report-client.js')
+        .then(({ reportGwpSessionEnd }) => reportGwpSessionEnd({
+          agencyId:         'kqna',
+          guid:             _qnaGuid(),
+          messages:         hist,
+          resultText:       txt,
+          summaryLine:      `Gopang QnA 질의응답: ${question.slice(0, 60)}`,
+          gwpMode:          GWP_MODE,
+          gwpOrigin:        GWP_ORIGIN,
+          sessionId:        _gwpSessionId,
+          sessionStartedAt: _gwpStartedAt,
+        }))
+        .catch(e => console.warn('[GWP_DONE] kqna 보고 실패(무시):', e.message));
+    }
   } catch {
     document.getElementById(tid)?.remove();
     appendMsg('ai', '오류가 발생했습니다. 다시 시도해 주세요.');
