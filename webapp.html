@@ -575,6 +575,20 @@ async function buildSystemPrompt(question) {
 }
 
 // ── AI 호출 — Proxy(DeepSeek) + Claude 폴백 ───────────────────
+// ★ 2026-07-30 신설 — GWP facts(currentLocation) 파싱 (주피터 지시 —
+// gov 도메인을 넘어 서비스 전반으로 확장). handleAIChat/callDeepSeek
+// 둘 다 이미 currentLocation을 받으면 강제 주입하도록 되어 있다.
+let GWP_FACTS = null;
+try {
+  const _qs = new URLSearchParams(location.search);
+  if (_qs.get('facts')) {
+    const raw = (_qs.get('facts_enc') === 'b64')
+      ? decodeURIComponent(escape(atob(_qs.get('facts'))))
+      : decodeURIComponent(_qs.get('facts'));
+    GWP_FACTS = JSON.parse(raw);
+  }
+} catch (e) { console.warn('[QnA] facts 파싱 실패(무시):', e.message); }
+
 async function callAI(messages, question) {
   const sp = await buildSystemPrompt(question || '');
   try {
@@ -587,6 +601,7 @@ async function callAI(messages, question) {
         system:   sp,
         messages: messages.slice(-CFG.maxHistory),
         max_tokens: 2000,
+        currentLocation: GWP_FACTS?.currentLocation || null,
       }),
     });
     if (!r.ok) throw new Error(`proxy ${r.status}`);
@@ -604,6 +619,7 @@ async function callAI(messages, question) {
         model: 'deepseek-v4-pro',
         max_tokens: 1000, temperature: 0.7,
         messages: [{ role: 'system', content: sp }, ...messages.slice(-8)],
+        currentLocation: GWP_FACTS?.currentLocation || null,
       }),
     });
     if (!r2.ok) throw new Error(`fallback ${r2.status}`);
