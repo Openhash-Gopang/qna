@@ -496,6 +496,12 @@ html,body{height:100%;height:100dvh;overflow:hidden;
 
 <script>
 // ── CFG (원본 구조 유지) ───────────────────────────────────────
+// ★ 2026-07-30 버그 수정(발견) — escHtml이 이 파일 어디에도 선언된 적이
+// 없었다(ESLint no-undef로 발견). 대화기록 보기를 열면 항상
+// ReferenceError로 실패했을 것이다. 다른 K-서비스(webapp.html)와 동일한
+// 표준 구현을 그대로 가져온다.
+function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 const CFG = {
   proxyBase:  'https://hondi-proxy.tensor-city.workers.dev',
   model:      'deepseek-chat',
