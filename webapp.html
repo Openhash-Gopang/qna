@@ -597,22 +597,33 @@ try {
 
 async function callAI(messages, question) {
   const sp = await buildSystemPrompt(question || '');
+  // 2026-09-07 — /ai/chat(handleAIChat)은 hondi.net 메인 방문자 데모
+  // 위젯 전용으로 남기기로 함(주피터 지시: 의도된 예외, 비로그인 허용).
+  // QnA는 정식 K-서비스이므로 다른 K-서비스들과 동일하게 /deepseek
+  // (callDeepSeek, service_id='kqna' — UNIVERSAL_FORCED_K_SERVICES에
+  // 이미 등록돼 있었음)로 옮겨 guid/phone_verify_token 기반 과금·기록이
+  // 실제로 걸리게 한다.
+  const _pvt = (_qnaGuid() === 'anonymous' && window.KAuth && KAuth.hasValidLogin()) ? KAuth.getToken() : null;
   try {
-    const r = await fetch(`${CFG.proxyBase}/ai/chat`, {
+    const r = await fetch(`${CFG.proxyBase}/deepseek`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        provider: 'deepseek',
         model:    CFG.model,
-        system:   sp,
-        messages: messages.slice(-CFG.maxHistory),
+        service_id: 'kqna',
+        guid: _qnaGuid(),
+        phone_verify_token: _pvt,
+        messages: [{ role: 'system', content: sp }, ...messages.slice(-CFG.maxHistory)],
         max_tokens: 2000,
         currentLocation: GWP_FACTS?.currentLocation || null,
       }),
     });
     if (!r.ok) throw new Error(`proxy ${r.status}`);
     const d = await r.json();
-    return d.content || '잠시 후 다시 시도해 주세요.';
+    // /deepseek는 handleAIChat과 달리 OpenAI 호환 원본 형식을 그대로
+    // 반환한다(d.content가 아니라 d.choices[0].message.content) —
+    // school.html이 이미 이 경로에서 검증한 형식과 동일.
+    return d.choices?.[0]?.message?.content || '잠시 후 다시 시도해 주세요.';
   } catch(e) {
     console.warn('[QnA] 1차 프록시 실패, 재시도:', e.message);
     // 2026-07-18 수정: 폴백이 api.anthropic.com을 키 없이 직접 호출해서
@@ -623,6 +634,9 @@ async function callAI(messages, question) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'deepseek-v4-pro',
+        service_id: 'kqna',
+        guid: _qnaGuid(),
+        phone_verify_token: _pvt,
         max_tokens: 1000, temperature: 0.7,
         messages: [{ role: 'system', content: sp }, ...messages.slice(-8)],
         currentLocation: GWP_FACTS?.currentLocation || null,
