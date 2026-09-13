@@ -457,11 +457,20 @@ async function _loadSP(filename) {
   return _spCache[filename];
 }
 function _selectDomainSP(q) {
-  if (/K-Law|klaw|판결|법원|소송|법리|특허|K-OpenLaw|분쟁|청구항|출원/.test(q)) return 'SP-LAW.txt';
+  // 2026-09-13 수정 — 'SP-LAW.txt'와 'SP-CIVIC.txt'는 존재하지 않는 파일이다.
+  // SP-LAW는 2026-06-09 커밋(a7d392d)에서 SP-LEGAL(사법·분쟁)+SP-IP(지재권·
+  // 특허)로 분할됐고, 민원/교육 도메인도 실제로는 SP-GOV.txt/SP-EDU.txt로
+  // 이미 나뉘어 있었는데 이 라우팅 함수만 갱신되지 않았다. fetch 404가
+  // catch에서 빈 문자열로 무음 처리(_loadSP 참고)되기 때문에, 이 버그는
+  // 에러 없이 "도메인 특화 지식 없이 SP-CORE만으로 답하는" 형태로 조용히
+  // 발동해왔다 — 법률/특허/민원/교육 질문 전부가 영향을 받았을 것으로 추정.
+  if (/특허|청구항|출원|지식재산|상표|디자인권/.test(q)) return 'SP-IP.txt';
+  if (/K-Law|klaw|판결|법원|소송|법리|K-OpenLaw|분쟁/.test(q)) return 'SP-LEGAL.txt';
   if (/안전|응급|119|K-119|경찰|K-Police|K-Health|건강|의료|보험|K-Insurance/.test(q)) return 'SP-SAFETY.txt';
   if (/GDC|디지털커런시|세금|K-Tax|시장|K-Market|주식|K-Stock|금융|환전|이자/.test(q)) return 'SP-ECONOMY.txt';
   if (/교통|K-Traffic|택시|물류|K-Logistics|배송|운송/.test(q)) return 'SP-LOGISTICS.txt';
-  if (/민원|K-Public|학교|K-School|교육|민주|K-Democracy|DAWN|OFP|연합/.test(q)) return 'SP-CIVIC.txt';
+  if (/학교|K-School|교육/.test(q)) return 'SP-EDU.txt';
+  if (/민원|K-Public|민주|K-Democracy|DAWN|OFP|연합/.test(q)) return 'SP-GOV.txt';
   if (/OpenHash|PDV|SSO|인프라|보안|K-Security|GWP|L1|L2|L3|L4|L5|해시|분산원장/.test(q)) return 'SP-INFRA.txt';
   if (/제주|한림|파일럿|TF|태스크포스|확산|사업화|수익|채용/.test(q)) return 'SP-BIZ.txt';
   return null;
